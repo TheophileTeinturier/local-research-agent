@@ -91,6 +91,7 @@ def test_parse_real_tool_call_response() -> None:
     assert response.metrics.prompt_eval_count == 146
     assert response.metrics.eval_count == 25
     assert response.metrics.total_duration_ms == pytest.approx(11677.237)
+    assert response.metrics.load_duration_ms == pytest.approx(7082.2065)  # cold start
     assert response.message is REAL_TOOL_CALL_RESPONSE["message"]  # kept verbatim for history
 
 

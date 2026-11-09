@@ -25,9 +25,12 @@ class RecordedCall:
 
 
 class FakeLLM:
-    """Replays a scripted sequence of responses and records every call it receives."""
+    """Replays a scripted sequence of responses and records every call it receives.
 
-    def __init__(self, responses: Sequence[LLMResponse]) -> None:
+    A script item that is an exception is raised instead of returned (e.g. an `LLMError`).
+    """
+
+    def __init__(self, responses: Sequence[LLMResponse | BaseException]) -> None:
         self._responses = list(responses)
         self.calls: list[RecordedCall] = []
 
@@ -43,13 +46,31 @@ class FakeLLM:
         self.calls.append(
             RecordedCall(copy.deepcopy(list(messages)), copy.deepcopy(tools), options)
         )
-        return self._responses[len(self.calls) - 1]
+        response = self._responses[len(self.calls) - 1]
+        if isinstance(response, BaseException):
+            raise response
+        return response
+
+
+class FakeClock:
+    """Injectable monotonic clock: time only moves when a test calls `advance`."""
+
+    def __init__(self, start: float = 1000.0) -> None:
+        self.now = start
+
+    def __call__(self) -> float:
+        return self.now
+
+    def advance(self, seconds: float) -> None:
+        self.now += seconds
 
 
 def text_response(content: str) -> LLMResponse:
     return LLMResponse(
         message={"role": "assistant", "content": content},
-        metrics=LLMMetrics(prompt_eval_count=10, eval_count=5, total_duration_ns=1_000_000),
+        metrics=LLMMetrics(
+            prompt_eval_count=10, eval_count=5, total_duration_ns=1_000_000, load_duration_ns=0
+        ),
     )
 
 

@@ -1,13 +1,15 @@
 """Hits a real Ollama server. Opt-in: `uv run pytest -m integration`.
 
-Model outputs are not deterministic, so these assert on the behaviour that matters (was the
-tool called, does the answer contain the right fact), not on exact wording.
+Model outputs are not deterministic, so these assert on the behaviour that matters (which
+tools were called, does the answer contain the right fact), not on exact wording.
 """
+
+import datetime
 
 import httpx
 import pytest
 
-from local_research_agent.agent import ToolStep, run_once
+from local_research_agent.agent import AgentConfig, StopReason, run_agent
 from local_research_agent.llm import ChatOptions, OllamaClient
 from local_research_agent.tools import build_default_registry
 
@@ -27,23 +29,26 @@ def llm():
     client.close()
 
 
-OPTIONS = ChatOptions(temperature=0.0, think=False)
+CONFIG = AgentConfig(llm_options=ChatOptions(temperature=0.0, think=False))
 
 
-def test_arithmetic_question_uses_calculator(llm: OllamaClient) -> None:
-    result = run_once(llm, build_default_registry(), "What is 17 * 23 + 4?", options=OPTIONS)
+def test_two_step_question_chains_date_then_calculator(llm: OllamaClient) -> None:
+    # The second tool call depends on the first result: the year is unknown to the model.
+    result = run_agent(
+        llm, build_default_registry(), CONFIG, "What is the current year multiplied by 3?"
+    )
 
-    tool_steps = [step for step in result.trace if isinstance(step, ToolStep)]
-    assert tool_steps, "expected a calculator call"
-    assert tool_steps[0].call.name == "calculator"
-    assert tool_steps[0].result.ok
-    assert "395" in result.answer
+    assert result.stop_reason is StopReason.FINAL_ANSWER
+    called = [c.name for c in result.state.tool_calls if c.ok]
+    assert called[:1] == ["current_date"]
+    assert "calculator" in called
+    expected = str(datetime.date.today().year * 3)
+    assert expected in (result.final_answer or "").replace(",", "")
 
 
 def test_general_knowledge_question_answers_directly(llm: OllamaClient) -> None:
-    result = run_once(
-        llm, build_default_registry(), "What is the capital of France?", options=OPTIONS
-    )
+    result = run_agent(llm, build_default_registry(), CONFIG, "What is the capital of France?")
 
-    assert not any(isinstance(step, ToolStep) for step in result.trace)
-    assert "Paris" in result.answer
+    assert result.stop_reason is StopReason.FINAL_ANSWER
+    assert result.state.tool_calls == []
+    assert "Paris" in (result.final_answer or "")

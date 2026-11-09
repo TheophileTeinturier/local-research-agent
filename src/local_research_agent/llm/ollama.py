@@ -8,7 +8,10 @@ Checked against https://docs.ollama.com/api/chat, /capabilities/tool-calling and
   also returns `tool_calls[i].id` and `function.index`, which the docs do not show.
 - With think=true, the reasoning is in `message.thinking`, separate from `message.content`.
   With think=false the field is absent.
-- All `*_duration` fields are in nanoseconds.
+- All `*_duration` fields are in nanoseconds, including `load_duration` (model loading time).
+- Several tool calls in one response are several entries of `message.tool_calls`; each result
+  goes back as its own `{"role": "tool", "tool_name": ..., "content": ...}` message, in call
+  order. There is no `tool_call_id` in the documented format (re-checked 2026-11-05).
 """
 
 from __future__ import annotations
@@ -123,6 +126,7 @@ def parse_chat_response(data: Any) -> LLMResponse:
         prompt_eval_count=_int_or_none(data.get("prompt_eval_count")),
         eval_count=_int_or_none(data.get("eval_count")),
         total_duration_ns=_int_or_none(data.get("total_duration")),
+        load_duration_ns=_int_or_none(data.get("load_duration")),
     )
     return LLMResponse(message=message, tool_calls=tool_calls, metrics=metrics)
 

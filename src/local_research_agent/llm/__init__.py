@@ -9,6 +9,7 @@ from .base import (
     Message,
     ToolCall,
     ToolSchema,
+    system_message,
     tool_result_message,
     user_message,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "OllamaClient",
     "ToolCall",
     "ToolSchema",
+    "system_message",
     "tool_result_message",
     "user_message",
 ]

@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 import pytest
 from pydantic import BaseModel, Field
@@ -43,8 +44,12 @@ def make_registry(**kwargs: object) -> ToolRegistry:
 # --- schemas ---------------------------------------------------------------------------
 
 
+def test_default_registry_tools() -> None:
+    assert build_default_registry().names == ["calculator", "current_date"]
+
+
 def test_schemas_use_ollama_function_format() -> None:
-    [schema] = build_default_registry().schemas()
+    schema = build_default_registry().schemas()[0]
     assert schema["type"] == "function"
     function = schema["function"]
     assert function["name"] == "calculator"
@@ -80,6 +85,30 @@ def test_invalid_tool_name_rejected() -> None:
         Tool("has space", "d", EchoArgs, _echo)
 
 
+# --- subset ----------------------------------------------------------------------------------
+
+
+def test_subset_keeps_only_named_tools_and_settings() -> None:
+    registry = make_registry(max_output_chars=50)
+    subset = registry.subset(["picky", "echo"])
+    assert subset.names == ["echo", "picky"]  # registry order, not argument order
+    assert subset.max_output_chars == 50
+    assert subset.get("echo") is registry.get("echo")  # same Tool objects
+    assert len(registry) == 4  # the original is untouched
+
+
+def test_subset_call_outside_is_unknown_tool() -> None:
+    result = make_registry().subset(["echo"]).execute("boom", {"text": "x"})
+    assert not result.ok
+    assert result.metadata["error_type"] == "unknown_tool"
+    assert "Available tools: echo." in result.content
+
+
+def test_subset_with_unregistered_name_raises() -> None:
+    with pytest.raises(ValueError, match="nope"):
+        make_registry().subset(["echo", "nope"])
+
+
 # --- execute: success ----------------------------------------------------------------------
 
 
@@ -88,6 +117,12 @@ def test_execute_success() -> None:
     assert result.ok
     assert result.content == "abab"
     assert result.metadata["duration_ms"] >= 0
+
+
+def test_current_date_tool() -> None:
+    result = build_default_registry().execute("current_date", {})
+    assert result.ok
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}", result.content)
 
 
 def test_execute_accepts_json_string_arguments() -> None:

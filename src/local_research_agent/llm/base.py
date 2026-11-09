@@ -4,6 +4,7 @@ Message format
 --------------
 Messages are plain dicts in the Ollama chat format, which is close to the OpenAI one:
 
+    {"role": "system", "content": "You are a careful assistant..."}   (optional, first)
     {"role": "user", "content": "What is 17 * 23 + 4?"}
     {"role": "assistant", "content": "", "tool_calls": [
         {"function": {"name": "calculator", "arguments": {"expression": "17 * 23 + 4"}}}]}
@@ -49,10 +50,21 @@ class LLMMetrics:
     prompt_eval_count: int | None = None  # prompt tokens (including cached ones)
     eval_count: int | None = None  # generated tokens
     total_duration_ns: int | None = None  # server-side time, nanoseconds
+    # Time spent loading the model into memory, included in total_duration. Large on a cold
+    # start (seconds), close to zero once the model is loaded.
+    load_duration_ns: int | None = None
 
     @property
     def total_duration_ms(self) -> float | None:
-        return None if self.total_duration_ns is None else self.total_duration_ns / 1e6
+        return _ns_to_ms(self.total_duration_ns)
+
+    @property
+    def load_duration_ms(self) -> float | None:
+        return _ns_to_ms(self.load_duration_ns)
+
+
+def _ns_to_ms(value: int | None) -> float | None:
+    return None if value is None else value / 1e6
 
 
 @dataclass(frozen=True)
@@ -90,6 +102,10 @@ class LLMClient(Protocol):
         tools: Sequence[ToolSchema] | None = None,
         options: ChatOptions | None = None,
     ) -> LLMResponse: ...
+
+
+def system_message(content: str) -> Message:
+    return {"role": "system", "content": content}
 
 
 def user_message(content: str) -> Message:

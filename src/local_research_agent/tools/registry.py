@@ -53,6 +53,22 @@ class ToolRegistry:
     def __contains__(self, name: object) -> bool:
         return name in self._tools
 
+    def subset(self, names: Iterable[str]) -> ToolRegistry:
+        """A new registry holding only `names` (same `Tool` objects, same output cap).
+
+        A call to a tool outside the subset is then an ordinary unknown tool: an error
+        observation listing only the tools of the subset. Raises `ValueError` for a name that
+        is not registered here, because that is a configuration mistake, not model behaviour.
+        """
+        wanted = set(names)
+        missing = sorted(wanted - self._tools.keys())
+        if missing:
+            raise ValueError(f"Unknown tool(s) in subset: {', '.join(missing)}")
+        return ToolRegistry(
+            (tool for tool in self._tools.values() if tool.name in wanted),
+            max_output_chars=self.max_output_chars,
+        )
+
     def schemas(self) -> list[dict[str, Any]]:
         """Tool definitions in Ollama's `tools` request format (the OpenAI function format)."""
         return [
