@@ -127,7 +127,7 @@ class ToolRegistry:
         try:
             output = tool.function(args)
         except ToolError as exc:
-            return _error("tool_error", str(exc))
+            return _error(exc.error_type, str(exc))
         except Exception as exc:
             # Deliberately broad: a buggy tool must not crash the agent. The model sees a short
             # error; the traceback goes to the logs for the developer.
@@ -171,7 +171,8 @@ def _format_validation_error(exc: ValidationError) -> str:
     parts = []
     for err in exc.errors(include_url=False):
         location = ".".join(str(part) for part in err["loc"]) or "<arguments>"
-        parts.append(f"{location}: {err['msg']}")
+        # rstrip: the caller appends ". Expected JSON schema", so avoid "..".
+        parts.append(f"{location}: {err['msg'].rstrip('.')}")
     return "; ".join(parts)
 
 

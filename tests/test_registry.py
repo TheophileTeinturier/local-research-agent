@@ -45,7 +45,12 @@ def make_registry(**kwargs: object) -> ToolRegistry:
 
 
 def test_default_registry_tools() -> None:
-    assert build_default_registry().names == ["calculator", "current_date"]
+    assert build_default_registry().names == [
+        "calculator",
+        "current_date",
+        "search_arxiv",
+        "get_paper_details",
+    ]
 
 
 def test_schemas_use_ollama_function_format() -> None:

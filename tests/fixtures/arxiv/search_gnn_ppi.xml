@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/jKBFLuQWCFr6YkXjh08xmFjwHQs</id>
+  <title>arXiv Query: search_query=all:graph AND all:neural AND all:networks AND all:"protein protein" AND all:interaction AND all:prediction&amp;id_list=&amp;start=0&amp;max_results=5</title>
+  <updated>2026-11-09T09:47:34Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:graph+AND+(all:neural+AND+(all:networks+AND+(all:%22protein+protein%22+AND+(all:interaction+AND+all:prediction))))&amp;start=0&amp;max_results=5&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>5</opensearch:itemsPerPage>
+  <opensearch:totalResults>43</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2606.01781v1</id>
+    <title>Structure-Guided Adaptive Propagation for Protein-Protein Interaction Site Prediction</title>
+    <updated>2026-06-01T07:03:00Z</updated>
+    <link href="https://arxiv.org/abs/2606.01781v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2606.01781v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Accurate prediction of protein-protein interaction sites (PPIS) is essential for understanding cellular processes, disease mechanisms, and therapeutic target discovery. Graph-based deep learning has advanced PPIS prediction by incorporating residue-level structural context. However, most graph-based models still rely on fixed propagation schemes that treat all residues similarly, despite the structural and functional heterogeneity of protein interfaces. Such propagation may limit the ability to adapt information diffusion to local geometric environments, making it difficult to distinguish true interaction sites from structurally similar non-interacting neighbors. We present SGAP-PPIS, a structure-guided adaptive propagation model for PPIS prediction. Rather than using a fixed propagation mechanism, SGAP-PPIS leverages multi-scale geometric states from an equivariant graph neural network to generate residue-wise propagation coefficients. This design allows each residue to adaptively balance local feature preservation and neighborhood diffusion according to its geometric microenvironment. Experimental results show that SGAP-PPIS achieves competitive performance among the state-of-the-art methods on Test\_60. Ablation studies show that geometry-conditioned adaptive propagation, scale-aligned geometric guidance, and multi-step propagation-state representation jointly drive these improvements.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-06-01T07:03:00Z</published>
+    <arxiv:comment>9 pages, 3 figures</arxiv:comment>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Enqiang Zhu</name>
+    </author>
+    <author>
+      <name>Yizi Liu</name>
+    </author>
+    <author>
+      <name>Yilong Luo</name>
+    </author>
+    <author>
+      <name>Yao Chen</name>
+    </author>
+    <author>
+      <name>Yu Zhang</name>
+    </author>
+    <author>
+      <name>Baoshan Ma</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2605.07838v1</id>
+    <title>PPI-Net connects molecular protein interactions to functional processes in disease</title>
+    <updated>2026-05-08T15:04:28Z</updated>
+    <link href="https://arxiv.org/abs/2605.07838v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2605.07838v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Understanding how molecular alterations propagate across biological systems to drive disease remains a central challenge. Although high-throughput profiling enables comprehensive characterization of tumor states, most models neglect structured biological relationships or lack interpretability across scales. Here we present PPI-Net, a hierarchical graph neural network that integrates protein-protein interaction (PPI) networks with pathway-level representations to model disease from molecular interactions to functional processes. Patient-specific molecular profiles are embedded within a shared interaction network from STRING and propagated through a multi-layer Reactome hierarchy using graph attention, enabling aggregation of gene-level signals into higher-order biological programs. Across RNA-seq data from ten cancer types from The Cancer Genome Atlas, PPI-Net achieves robust predictive performance, with balanced accuracy exceeding 90% in multiple cohorts. Comparative analysis on RNA-Seq data from breast cancer demonstrated that PPI-Net's integration of the Reactome hierarchy improved balanced accuracy by 6.7% relative to a PPI-only model, while hierarchical multi-level supervision improved balanced accuracy by 12.3% relative to using only a single top-level prediction head. Applying a multi-omics approach using RNA-seq and methylation data improves model interpretation, recovering canonical oncogenic modules, including TP53-AKT signaling and stress response pathways, while revealing convergence onto coherent programs such as ion signaling and cellular responses to stimuli. These results demonstrate that integrating interaction networks with pathway hierarchies enables accurate prediction while providing mechanistic insight into cancer biology.</summary>
+    <category term="q-bio.QM" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-05-08T15:04:28Z</published>
+    <arxiv:comment>17 pages, 3 figures, 2 tables</arxiv:comment>
+    <arxiv:primary_category term="q-bio.QM"/>
+    <author>
+      <name>Kyle Higgins</name>
+    </author>
+    <author>
+      <name>Guadalupe Gonzalez</name>
+    </author>
+    <author>
+      <name>Dennis Veselkov</name>
+    </author>
+    <author>
+      <name>Ivan Laponogov</name>
+    </author>
+    <author>
+      <name>Kirill Veselkov</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2603.15047v1</id>
+    <title>CrossADR: enhancing adverse drug reactions prediction for combination pharmacotherapy with cross-layer feature integration and cross-level associative learning</title>
+    <updated>2026-03-16T09:58:03Z</updated>
+    <link href="https://arxiv.org/abs/2603.15047v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2603.15047v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Combination pharmacotherapy offers substantial therapeutic advantages but also poses substantial risks of adverse drug reactions (ADRs). The accurate prediction of ADRs with interpretable computational methods is crucial for clinical safety management, drug development, and precision medicine. However, managing ADRs remains a challenge due to the vast search space of drug combinations and the complexity of physiological responses. Current graph-based architectures often struggle to effectively integrate multi-scale biological information and frequently rely on fixed association matrices, which limits their ability to capture dynamic organ-level dependencies and generalize across diverse datasets. Here we propose CrossADR, a hierarchical framework for organ-level ADR prediction through cross-layer feature integration and cross-level associative learning. It incorporates a gated-residual-flow graph neural network to fuse multi-scale molecular features and utilizes a learnable ADR embedding space to dynamically capture latent biological correlations across 15 organ systems. Systematic evaluation on the newly constructed CrossADR-Dataset-covering 1,376 drugs and 946,000 unique combinations-demonstrates that CrossADR consistently achieves state-of-the-art performance across 80 distinct experimental scenarios and provides high-resolution insights into drug-related protein protein interactions and pathways. Overall, CrossADR represents a robust tool for cross-scale biomedical information integration, cross-layer feature integration as well as cross-level associative learning, and can be effectively utilized to prevent ADRs in clinical decision-making.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="math.AG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-03-16T09:58:03Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Y. Cheung</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2510.22008v1</id>
+    <title>A Multimodal Human Protein Embeddings Database: DeepDrug Protein Embeddings Bank (DPEB)</title>
+    <updated>2025-10-24T20:22:17Z</updated>
+    <link href="https://arxiv.org/abs/2510.22008v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2510.22008v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Computationally predicting protein-protein interactions (PPIs) is challenging due to the lack of integrated, multimodal protein representations. DPEB is a curated collection of 22,043 human proteins that integrates four embedding types: structural (AlphaFold2), transformer-based sequence (BioEmbeddings), contextual amino acid patterns (ESM-2: Evolutionary Scale Modeling), and sequence-based n-gram statistics (ProtVec]). AlphaFold2 protein structures are available through public databases (e.g., AlphaFold2 Protein Structure Database), but the internal neural network embeddings are not. DPEB addresses this gap by providing AlphaFold2-derived embeddings for computational modeling. Our benchmark evaluations show GraphSAGE with BioEmbedding achieved the highest PPI prediction performance (87.37% AUROC, 79.16% accuracy). The framework also achieved 77.42% accuracy for enzyme classification and 86.04% accuracy for protein family classification. DPEB supports multiple graph neural network methods for PPI prediction, enabling applications in systems biology, drug target identification, pathway analysis, and disease mechanism studies.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-bio.MN" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-10-24T20:22:17Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Md Saiful Islam Sajol</name>
+    </author>
+    <author>
+      <name>Magesh Rajasekaran</name>
+    </author>
+    <author>
+      <name>Hayden Gemeinhardt</name>
+    </author>
+    <author>
+      <name>Adam Bess</name>
+    </author>
+    <author>
+      <name>Chris Alvin</name>
+    </author>
+    <author>
+      <name>Supratik Mukhopadhyay</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2510.14139v1</id>
+    <title>Inferred global dense residue transition graphs from primary structure sequences enable protein interaction prediction via directed graph convolutional neural networks</title>
+    <updated>2025-10-15T22:15:31Z</updated>
+    <link href="https://arxiv.org/abs/2510.14139v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2510.14139v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Introduction Accurate prediction of protein-protein interactions (PPIs) is crucial for understanding cellular functions and advancing drug development. Existing in-silico methods use direct sequence embeddings from Protein Language Models (PLMs). Others use Graph Neural Networks (GNNs) for 3D protein structures. This study explores less computationally intensive alternatives. We introduce a novel framework for downstream PPI prediction through link prediction. Methods We introduce a two-stage graph representation learning framework, ProtGram-DirectGCN. First, we developed ProtGram. This approach models a protein's primary structure as a hierarchy of globally inferred n-gram graphs. In these graphs, residue transition probabilities define edge weights. Each edge connects a pair of residues in a directed graph. The probabilities are aggregated from a large corpus of sequences. Second, we propose DirectGCN, a custom directed graph convolutional neural network. This model features a unique convolutional layer. It processes information through separate path-specific transformations: incoming, outgoing, and undirected. A shared transformation is also applied. These paths are combined via a learnable gating mechanism. We apply DirectGCN to ProtGram graphs to learn residue-level embeddings. These embeddings are pooled via attention to generate protein-level embeddings for prediction. Results We first established the efficacy of DirectGCN on standard node classification benchmarks. Its performance matches established methods on general datasets. The model excels at complex, directed graphs with dense, heterophilic structures. When applied to PPI prediction, the full ProtGram-DirectGCN framework delivers robust predictive power. This strong performance holds even with limited training data.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-10-15T22:15:31Z</published>
+    <arxiv:comment>under review in Frontiers in Bioinformatics</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Islam Akef Ebeid</name>
+    </author>
+    <author>
+      <name>Haoteng Tang</name>
+    </author>
+    <author>
+      <name>Pengfei Gu</name>
+    </author>
+    <arxiv:doi>10.3389/fbinf.2025.1651623</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.3389/fbinf.2025.1651623" title="doi"/>
+  </entry>
+</feed>

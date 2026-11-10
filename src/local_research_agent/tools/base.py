@@ -24,8 +24,14 @@ class ToolError(Exception):
     """An expected failure the tool reports to the model (bad input, domain error).
 
     The registry passes its message to the LLM unchanged, so write it as an instruction the
-    model can act on ("use ** for powers"), not as a stack trace.
+    model can act on ("use ** for powers"), not as a stack trace. `error_type` ends up in
+    `ToolResult.metadata["error_type"]`, so logs and evaluations can tell failures apart
+    (e.g. "arxiv_unavailable" vs "not_found") without parsing the message.
     """
+
+    def __init__(self, message: str, *, error_type: str = "tool_error") -> None:
+        super().__init__(message)
+        self.error_type = error_type
 
 
 @dataclass(frozen=True)

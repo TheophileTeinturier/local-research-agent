@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from local_research_agent.llm import (
@@ -15,6 +16,8 @@ from local_research_agent.llm import (
     ToolCall,
     ToolSchema,
 )
+
+ARXIV_FIXTURES = Path(__file__).parent / "fixtures" / "arxiv"
 
 
 @dataclass
@@ -88,3 +91,15 @@ def tool_call_response(*calls: tuple[str, dict[str, Any] | str]) -> LLMResponse:
         tool_calls=tool_calls,
         metrics=LLMMetrics(prompt_eval_count=20, eval_count=8, total_duration_ns=2_000_000),
     )
+
+
+class FakeSleep:
+    """Injectable `sleep`: records each duration and advances `clock` instead of sleeping."""
+
+    def __init__(self, clock: FakeClock) -> None:
+        self.clock = clock
+        self.calls: list[float] = []
+
+    def __call__(self, seconds: float) -> None:
+        self.calls.append(seconds)
+        self.clock.advance(seconds)

@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/2Kaq8b3xdznvbxU0BLRLEsCl3b8</id>
+  <title>arXiv Query: search_query=&amp;id_list=2606.01781&amp;start=0&amp;max_results=1</title>
+  <updated>2026-11-09T09:47:39Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=1&amp;id_list=2606.01781" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>1</opensearch:itemsPerPage>
+  <opensearch:totalResults>1</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2606.01781v1</id>
+    <title>Structure-Guided Adaptive Propagation for Protein-Protein Interaction Site Prediction</title>
+    <updated>2026-06-01T07:03:00Z</updated>
+    <link href="https://arxiv.org/abs/2606.01781v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2606.01781v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Accurate prediction of protein-protein interaction sites (PPIS) is essential for understanding cellular processes, disease mechanisms, and therapeutic target discovery. Graph-based deep learning has advanced PPIS prediction by incorporating residue-level structural context. However, most graph-based models still rely on fixed propagation schemes that treat all residues similarly, despite the structural and functional heterogeneity of protein interfaces. Such propagation may limit the ability to adapt information diffusion to local geometric environments, making it difficult to distinguish true interaction sites from structurally similar non-interacting neighbors. We present SGAP-PPIS, a structure-guided adaptive propagation model for PPIS prediction. Rather than using a fixed propagation mechanism, SGAP-PPIS leverages multi-scale geometric states from an equivariant graph neural network to generate residue-wise propagation coefficients. This design allows each residue to adaptively balance local feature preservation and neighborhood diffusion according to its geometric microenvironment. Experimental results show that SGAP-PPIS achieves competitive performance among the state-of-the-art methods on Test\_60. Ablation studies show that geometry-conditioned adaptive propagation, scale-aligned geometric guidance, and multi-step propagation-state representation jointly drive these improvements.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-06-01T07:03:00Z</published>
+    <arxiv:comment>9 pages, 3 figures</arxiv:comment>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Enqiang Zhu</name>
+    </author>
+    <author>
+      <name>Yizi Liu</name>
+    </author>
+    <author>
+      <name>Yilong Luo</name>
+    </author>
+    <author>
+      <name>Yao Chen</name>
+    </author>
+    <author>
+      <name>Yu Zhang</name>
+    </author>
+    <author>
+      <name>Baoshan Ma</name>
+    </author>
+  </entry>
+</feed>

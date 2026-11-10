@@ -17,7 +17,7 @@ from .agent import AgentConfig, AgentLimits, AgentResult, StopReason, run_agent
 from .agent.state import LLMCallRecord, ToolCallRecord
 from .llm import ChatOptions, OllamaClient
 from .observability import configure_logging
-from .tools import build_default_registry
+from .tools import ArxivClient, build_default_registry
 
 _PREVIEW_CHARS = 120
 
@@ -70,8 +70,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             temperature=args.temperature, num_ctx=args.num_ctx, think=args.think
         ),
     )
-    with OllamaClient.from_env(model=args.model, host=args.host) as llm:
-        result = run_agent(llm, build_default_registry(), config, args.question)
+    with (
+        ArxivClient() as arxiv,
+        OllamaClient.from_env(model=args.model, host=args.host) as llm,
+    ):
+        registry = build_default_registry(arxiv_client=arxiv)
+        result = run_agent(llm, registry, config, args.question)
 
     print(format_result(result))
     return 0 if result.stop_reason is StopReason.FINAL_ANSWER else 1
