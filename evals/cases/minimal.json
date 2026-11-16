@@ -1,0 +1,111 @@
+{
+  "description": "Minimal suite: 10 cases covering single tool, multi-step, tool choice, errors and edge cases. Schema: evals/suite.py.",
+  "cases": [
+    {
+      "id": "calc_basic",
+      "category": "single_tool",
+      "question": "What is 12% of 2450?",
+      "checks": [
+        {"name": "tool_called", "params": {"tool": "calculator"}},
+        {"name": "answer_matches", "params": {"regex": "\\b294\\b"}}
+      ]
+    },
+    {
+      "id": "calc_big",
+      "category": "single_tool",
+      "question": "What is 48271 * 9183?",
+      "checks": [
+        {"name": "tool_called", "params": {"tool": "calculator"}},
+        {"name": "answer_matches", "params": {"regex": "443[,\\s\\u202f.']?272[,\\s\\u202f.']?593"}}
+      ]
+    },
+    {
+      "id": "date_diff_multistep",
+      "category": "multi_step",
+      "question": "How many days are there between today and 2026-12-25?",
+      "frozen_now": "2026-11-09T10:18:18",
+      "checks": [
+        {"name": "tool_called", "params": {"tool": "current_date"}},
+        {"name": "answer_matches", "params": {"regex": "\\b46\\b"}}
+      ]
+      
+    },
+    {
+      "id": "no_tool_general",
+      "category": "no_tool",
+      "question": "What does GNN stand for?",
+      "checks": [
+        {"name": "no_tool_called"},
+        {"name": "answer_matches", "params": {"regex": "(?i)graph neural network"}}
+      ]
+    },
+    {
+      "id": "details_known_id",
+      "category": "tool_choice",
+      "question": "Summarize the paper arXiv:1706.02216 in 3 sentences",
+      "arxiv": {"papers": {"1706.02216": "paper_1706.02216.xml"}},
+      "checks": [
+        {"name": "tool_called", "params": {"tool": "get_paper_details"}},
+        {"name": "tool_arg_equals", "params": {"tool": "get_paper_details", "arg": "arxiv_id", "value": "1706.02216"}},
+        {"name": "tool_not_called", "params": {"tool": "search_arxiv"}},
+        {"name": "cited_ids_subset_of_tool_ids"},
+        {"name": "answer_matches", "params": {"regex": "(?i)graphsage|inductive"}}
+      ]
+    },
+    {
+      "id": "research_synthesis",
+      "category": "multi_step",
+      "question": "Find recent arXiv papers on graph neural networks for protein-protein interaction prediction, pick the 3 most relevant and write a short synthesis",
+      "arxiv": {"search": "search_gnn_ppi_10.xml"},
+      "checks": [
+        {"name": "tool_arg_min", "params": {"tool": "search_arxiv", "arg": "max_results", "value": 6}},
+        {"name": "tool_called", "params": {"tool": "get_paper_details", "min": 2}},
+        {"name": "cited_ids_subset_of_tool_ids"},
+        {"name": "cited_ids_count", "params": {"exactly": 3}}
+      ]
+    },
+    {
+      "id": "unknown_id_wellformed",
+      "category": "error",
+      "question": "Give me the abstract of arXiv paper 2406.99999",
+      "arxiv": {"default_search": "empty"},
+      "checks": [
+        {"name": "tool_called", "params": {"tool": "get_paper_details"}},
+        {"name": "cited_ids_subset_of_tool_ids"},
+        {"name": "answer_signals_failure", "params": {"regex": "(?i)not (be )?found|could ?n[o'’]?t (find|locate|retrieve)|unable to (find|locate|retrieve)|does ?n[o'’]?t exist|does not exist|no (arxiv )?paper|invalid|not (a )?valid"}}
+      ]
+    },
+    {
+      "id": "arxiv_down",
+      "category": "error",
+      "question": "Summarize the paper arXiv:1706.02216 in 3 sentences",
+      "arxiv": {"papers": {"1706.02216": "paper_1706.02216.xml"}, "failure_mode": "http_503"},
+      "checks": [
+        {"name": "tool_called", "params": {"tool": "get_paper_details"}},
+        {"name": "max_tool_errors", "params": {"n": 3}},
+        {"name": "cited_ids_subset_of_tool_ids"},
+        {"name": "answer_signals_failure", "params": {"regex": "(?i)unavailable|unreachable|could ?n[o'’]?t (access|reach|retrieve|connect|fetch)|unable to (access|reach|retrieve|connect|fetch)|server error|try again later|temporar"}}
+      ]
+    },
+    {
+      "id": "empty_results",
+      "category": "edge",
+      "question": "Find recent arXiv papers about sourdough bread hydration",
+      "arxiv": {"search": "search_no_results.xml"},
+      "checks": [
+        {"name": "tool_called", "params": {"tool": "search_arxiv"}},
+        {"name": "cited_ids_count", "params": {"exactly": 0}},
+        {"name": "answer_signals_failure", "params": {"regex": "(?i)no (relevant |matching )?(papers|results)|did ?n[o'’]?t (find|return)|could ?n[o'’]?t find|found no|no .{0,40}(papers|results|matches)|nothing"}}
+      ]
+    },
+    {
+      "id": "out_of_scope",
+      "category": "edge",
+      "question": "Book me a flight to Montreal next week",
+      "checks": [
+        {"name": "no_tool_called"},
+        {"name": "answer_signals_failure", "params": {"regex": "(?i)can[o'’]?t|cannot|can not|unable|not able|do ?n[o'’]?t have|do not have|not possible|outside"}}
+      ]
+    }
+  ]
+}

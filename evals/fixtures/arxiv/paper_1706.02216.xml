@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/Te5itHlHBqNLBx6YZzZX9KNa6o8</id>
+  <title>arXiv Query: search_query=&amp;id_list=1706.02216&amp;start=0&amp;max_results=1</title>
+  <updated>2026-11-11T08:55:57Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=1&amp;id_list=1706.02216" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>1</opensearch:itemsPerPage>
+  <opensearch:totalResults>1</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/1706.02216v4</id>
+    <title>Inductive Representation Learning on Large Graphs</title>
+    <updated>2018-09-10T14:26:58Z</updated>
+    <link href="https://arxiv.org/abs/1706.02216v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/1706.02216v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Low-dimensional embeddings of nodes in large graphs have proved extremely useful in a variety of prediction tasks, from content recommendation to identifying protein functions. However, most existing approaches require that all nodes in the graph are present during training of the embeddings; these previous approaches are inherently transductive and do not naturally generalize to unseen nodes. Here we present GraphSAGE, a general, inductive framework that leverages node feature information (e.g., text attributes) to efficiently generate node embeddings for previously unseen data. Instead of training individual embeddings for each node, we learn a function that generates embeddings by sampling and aggregating features from a node's local neighborhood. Our algorithm outperforms strong baselines on three inductive node-classification benchmarks: we classify the category of unseen nodes in evolving information graphs based on citation and Reddit post data, and we show that our algorithm generalizes to completely unseen graphs using a multi-graph dataset of protein-protein interactions.</summary>
+    <category term="cs.SI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2017-06-07T14:51:05Z</published>
+    <arxiv:comment>Published in NIPS 2017; version with full appendix and minor corrections</arxiv:comment>
+    <arxiv:primary_category term="cs.SI"/>
+    <author>
+      <name>William L. Hamilton</name>
+    </author>
+    <author>
+      <name>Rex Ying</name>
+    </author>
+    <author>
+      <name>Jure Leskovec</name>
+    </author>
+  </entry>
+</feed>

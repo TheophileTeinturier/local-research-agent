@@ -28,6 +28,8 @@ packages = ["src/local_research_agent"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# The repo root, so tests can import the `evals` harness package (not shipped in the wheel).
+pythonpath = ["."]
 markers = [
     "integration: hits a real service (Ollama with the configured model, or the arXiv API)",
 ]
@@ -37,7 +39,7 @@ addopts = "-m 'not integration'"
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["src", "tests"]
+src = [".", "src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF"]

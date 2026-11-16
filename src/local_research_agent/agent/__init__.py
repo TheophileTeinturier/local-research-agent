@@ -2,7 +2,7 @@
 
 from .guards import AgentLimits
 from .loop import AgentConfig, run_agent
-from .prompts import SYSTEM_PROMPT
+from .prompts import DEFAULT_PROMPT_VARIANT, PROMPT_VARIANTS, SYSTEM_PROMPT, get_system_prompt
 from .state import (
     AgentMetrics,
     AgentResult,
@@ -13,6 +13,8 @@ from .state import (
 )
 
 __all__ = [
+    "DEFAULT_PROMPT_VARIANT",
+    "PROMPT_VARIANTS",
     "SYSTEM_PROMPT",
     "AgentConfig",
     "AgentLimits",
@@ -22,5 +24,6 @@ __all__ = [
     "LLMCallRecord",
     "StopReason",
     "ToolCallRecord",
+    "get_system_prompt",
     "run_agent",
 ]

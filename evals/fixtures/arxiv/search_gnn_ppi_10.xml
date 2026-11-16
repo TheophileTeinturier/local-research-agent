@@ -1,0 +1,270 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/h5E/cfykYgzk2PvGdh8St/9ha9Q</id>
+  <title>arXiv Query: search_query=all:graph AND all:neural AND all:networks AND all:"protein protein" AND all:interaction AND all:prediction&amp;id_list=&amp;start=0&amp;max_results=10</title>
+  <updated>2026-11-11T08:55:55Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:graph+AND+(all:neural+AND+(all:networks+AND+(all:%22protein+protein%22+AND+(all:interaction+AND+all:prediction))))&amp;start=0&amp;max_results=10&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>10</opensearch:itemsPerPage>
+  <opensearch:totalResults>43</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2606.01781v1</id>
+    <title>Structure-Guided Adaptive Propagation for Protein-Protein Interaction Site Prediction</title>
+    <updated>2026-06-01T07:03:00Z</updated>
+    <link href="https://arxiv.org/abs/2606.01781v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2606.01781v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Accurate prediction of protein-protein interaction sites (PPIS) is essential for understanding cellular processes, disease mechanisms, and therapeutic target discovery. Graph-based deep learning has advanced PPIS prediction by incorporating residue-level structural context. However, most graph-based models still rely on fixed propagation schemes that treat all residues similarly, despite the structural and functional heterogeneity of protein interfaces. Such propagation may limit the ability to adapt information diffusion to local geometric environments, making it difficult to distinguish true interaction sites from structurally similar non-interacting neighbors. We present SGAP-PPIS, a structure-guided adaptive propagation model for PPIS prediction. Rather than using a fixed propagation mechanism, SGAP-PPIS leverages multi-scale geometric states from an equivariant graph neural network to generate residue-wise propagation coefficients. This design allows each residue to adaptively balance local feature preservation and neighborhood diffusion according to its geometric microenvironment. Experimental results show that SGAP-PPIS achieves competitive performance among the state-of-the-art methods on Test\_60. Ablation studies show that geometry-conditioned adaptive propagation, scale-aligned geometric guidance, and multi-step propagation-state representation jointly drive these improvements.</summary>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-06-01T07:03:00Z</published>
+    <arxiv:comment>9 pages, 3 figures</arxiv:comment>
+    <arxiv:primary_category term="cs.AI"/>
+    <author>
+      <name>Enqiang Zhu</name>
+    </author>
+    <author>
+      <name>Yizi Liu</name>
+    </author>
+    <author>
+      <name>Yilong Luo</name>
+    </author>
+    <author>
+      <name>Yao Chen</name>
+    </author>
+    <author>
+      <name>Yu Zhang</name>
+    </author>
+    <author>
+      <name>Baoshan Ma</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2605.07838v1</id>
+    <title>PPI-Net connects molecular protein interactions to functional processes in disease</title>
+    <updated>2026-05-08T15:04:28Z</updated>
+    <link href="https://arxiv.org/abs/2605.07838v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2605.07838v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Understanding how molecular alterations propagate across biological systems to drive disease remains a central challenge. Although high-throughput profiling enables comprehensive characterization of tumor states, most models neglect structured biological relationships or lack interpretability across scales. Here we present PPI-Net, a hierarchical graph neural network that integrates protein-protein interaction (PPI) networks with pathway-level representations to model disease from molecular interactions to functional processes. Patient-specific molecular profiles are embedded within a shared interaction network from STRING and propagated through a multi-layer Reactome hierarchy using graph attention, enabling aggregation of gene-level signals into higher-order biological programs. Across RNA-seq data from ten cancer types from The Cancer Genome Atlas, PPI-Net achieves robust predictive performance, with balanced accuracy exceeding 90% in multiple cohorts. Comparative analysis on RNA-Seq data from breast cancer demonstrated that PPI-Net's integration of the Reactome hierarchy improved balanced accuracy by 6.7% relative to a PPI-only model, while hierarchical multi-level supervision improved balanced accuracy by 12.3% relative to using only a single top-level prediction head. Applying a multi-omics approach using RNA-seq and methylation data improves model interpretation, recovering canonical oncogenic modules, including TP53-AKT signaling and stress response pathways, while revealing convergence onto coherent programs such as ion signaling and cellular responses to stimuli. These results demonstrate that integrating interaction networks with pathway hierarchies enables accurate prediction while providing mechanistic insight into cancer biology.</summary>
+    <category term="q-bio.QM" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-05-08T15:04:28Z</published>
+    <arxiv:comment>17 pages, 3 figures, 2 tables</arxiv:comment>
+    <arxiv:primary_category term="q-bio.QM"/>
+    <author>
+      <name>Kyle Higgins</name>
+    </author>
+    <author>
+      <name>Guadalupe Gonzalez</name>
+    </author>
+    <author>
+      <name>Dennis Veselkov</name>
+    </author>
+    <author>
+      <name>Ivan Laponogov</name>
+    </author>
+    <author>
+      <name>Kirill Veselkov</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2603.15047v1</id>
+    <title>CrossADR: enhancing adverse drug reactions prediction for combination pharmacotherapy with cross-layer feature integration and cross-level associative learning</title>
+    <updated>2026-03-16T09:58:03Z</updated>
+    <link href="https://arxiv.org/abs/2603.15047v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2603.15047v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Combination pharmacotherapy offers substantial therapeutic advantages but also poses substantial risks of adverse drug reactions (ADRs). The accurate prediction of ADRs with interpretable computational methods is crucial for clinical safety management, drug development, and precision medicine. However, managing ADRs remains a challenge due to the vast search space of drug combinations and the complexity of physiological responses. Current graph-based architectures often struggle to effectively integrate multi-scale biological information and frequently rely on fixed association matrices, which limits their ability to capture dynamic organ-level dependencies and generalize across diverse datasets. Here we propose CrossADR, a hierarchical framework for organ-level ADR prediction through cross-layer feature integration and cross-level associative learning. It incorporates a gated-residual-flow graph neural network to fuse multi-scale molecular features and utilizes a learnable ADR embedding space to dynamically capture latent biological correlations across 15 organ systems. Systematic evaluation on the newly constructed CrossADR-Dataset-covering 1,376 drugs and 946,000 unique combinations-demonstrates that CrossADR consistently achieves state-of-the-art performance across 80 distinct experimental scenarios and provides high-resolution insights into drug-related protein protein interactions and pathways. Overall, CrossADR represents a robust tool for cross-scale biomedical information integration, cross-layer feature integration as well as cross-level associative learning, and can be effectively utilized to prevent ADRs in clinical decision-making.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="math.AG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-03-16T09:58:03Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Y. Cheung</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2510.22008v1</id>
+    <title>A Multimodal Human Protein Embeddings Database: DeepDrug Protein Embeddings Bank (DPEB)</title>
+    <updated>2025-10-24T20:22:17Z</updated>
+    <link href="https://arxiv.org/abs/2510.22008v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2510.22008v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Computationally predicting protein-protein interactions (PPIs) is challenging due to the lack of integrated, multimodal protein representations. DPEB is a curated collection of 22,043 human proteins that integrates four embedding types: structural (AlphaFold2), transformer-based sequence (BioEmbeddings), contextual amino acid patterns (ESM-2: Evolutionary Scale Modeling), and sequence-based n-gram statistics (ProtVec]). AlphaFold2 protein structures are available through public databases (e.g., AlphaFold2 Protein Structure Database), but the internal neural network embeddings are not. DPEB addresses this gap by providing AlphaFold2-derived embeddings for computational modeling. Our benchmark evaluations show GraphSAGE with BioEmbedding achieved the highest PPI prediction performance (87.37% AUROC, 79.16% accuracy). The framework also achieved 77.42% accuracy for enzyme classification and 86.04% accuracy for protein family classification. DPEB supports multiple graph neural network methods for PPI prediction, enabling applications in systems biology, drug target identification, pathway analysis, and disease mechanism studies.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-bio.MN" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-10-24T20:22:17Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Md Saiful Islam Sajol</name>
+    </author>
+    <author>
+      <name>Magesh Rajasekaran</name>
+    </author>
+    <author>
+      <name>Hayden Gemeinhardt</name>
+    </author>
+    <author>
+      <name>Adam Bess</name>
+    </author>
+    <author>
+      <name>Chris Alvin</name>
+    </author>
+    <author>
+      <name>Supratik Mukhopadhyay</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2510.14139v1</id>
+    <title>Inferred global dense residue transition graphs from primary structure sequences enable protein interaction prediction via directed graph convolutional neural networks</title>
+    <updated>2025-10-15T22:15:31Z</updated>
+    <link href="https://arxiv.org/abs/2510.14139v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2510.14139v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Introduction Accurate prediction of protein-protein interactions (PPIs) is crucial for understanding cellular functions and advancing drug development. Existing in-silico methods use direct sequence embeddings from Protein Language Models (PLMs). Others use Graph Neural Networks (GNNs) for 3D protein structures. This study explores less computationally intensive alternatives. We introduce a novel framework for downstream PPI prediction through link prediction. Methods We introduce a two-stage graph representation learning framework, ProtGram-DirectGCN. First, we developed ProtGram. This approach models a protein's primary structure as a hierarchy of globally inferred n-gram graphs. In these graphs, residue transition probabilities define edge weights. Each edge connects a pair of residues in a directed graph. The probabilities are aggregated from a large corpus of sequences. Second, we propose DirectGCN, a custom directed graph convolutional neural network. This model features a unique convolutional layer. It processes information through separate path-specific transformations: incoming, outgoing, and undirected. A shared transformation is also applied. These paths are combined via a learnable gating mechanism. We apply DirectGCN to ProtGram graphs to learn residue-level embeddings. These embeddings are pooled via attention to generate protein-level embeddings for prediction. Results We first established the efficacy of DirectGCN on standard node classification benchmarks. Its performance matches established methods on general datasets. The model excels at complex, directed graphs with dense, heterophilic structures. When applied to PPI prediction, the full ProtGram-DirectGCN framework delivers robust predictive power. This strong performance holds even with limited training data.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-10-15T22:15:31Z</published>
+    <arxiv:comment>under review in Frontiers in Bioinformatics</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Islam Akef Ebeid</name>
+    </author>
+    <author>
+      <name>Haoteng Tang</name>
+    </author>
+    <author>
+      <name>Pengfei Gu</name>
+    </author>
+    <arxiv:doi>10.3389/fbinf.2025.1651623</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.3389/fbinf.2025.1651623" title="doi"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2509.01916v2</id>
+    <title>Causal Representation Learning from Network Data</title>
+    <updated>2026-06-08T04:17:19Z</updated>
+    <link href="https://arxiv.org/abs/2509.01916v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2509.01916v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Causal disentanglement from soft interventions is identifiable under the assumptions of linear interventional faithfulness and availability of both observational and interventional data. Prior work has focused on unstructured observations without leveraging known relational context among measured entities. In many scientific applications, however, the measured variables come with an observed interaction network that provides structured context, such as protein-protein interactions and pathway-gene membership. We propose GraCE-VAE, a graph-aware causal discrepancy variational autoencoder that treats pathway-level information as an auxiliary view of the latent causal programs. The graph neural network encoder conditions on this auxiliary pathway view and the biological graph to improve amortized inference, while the causal decoder remains a latent SCM with soft interventions. Assuming samples are i.i.d. within each intervention regime, we show that GraCE-VAE inherits the identifiability guarantees of causal discrepancy VAEs and identifies the latent causal graph and intervention targets up to the standard equivalence class. Experiments on three CRISPR perturbation datasets demonstrate that leveraging structured biological context improves prediction of interventional outcomes, including unseen perturbation combinations.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-09-02T03:21:56Z</published>
+    <arxiv:comment>19 pages, 8 figures</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Jifan Zhang</name>
+    </author>
+    <author>
+      <name>Michelle M. Li</name>
+    </author>
+    <author>
+      <name>Elena Zheleva</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2508.01924v1</id>
+    <title>Pi-SAGE: Permutation-invariant surface-aware graph encoder for binding affinity prediction</title>
+    <updated>2025-08-03T21:19:20Z</updated>
+    <link href="https://arxiv.org/abs/2508.01924v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2508.01924v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Protein surface fingerprint encodes chemical and geometric features that govern protein-protein interactions and can be used to predict changes in binding affinity between two protein complexes. Current state-of-the-art models for predicting binding affinity change, such as GearBind, are all-atom based geometric models derived from protein structures. Although surface properties can be implicitly learned from the protein structure, we hypothesize that explicit knowledge of protein surfaces can improve a structure-based model's ability to predict changes in binding affinity. To this end, we introduce Pi-SAGE, a novel Permutation-Invariant Surface-Aware Graph Encoder. We first train Pi-SAGE to create a protein surface codebook directly from the structure and assign a token for each surface-exposed residue. Next, we augment the node features of the GearBind model with surface features from domain-adapted Pi-SAGE to predict binding affinity change on the SKEMPI dataset. We show that explicitly incorporating local, context-aware chemical properties of residues enhances the predictive power of all-atom graph neural networks in modeling binding affinity changes between wild-type and mutant proteins.</summary>
+    <category term="q-bio.BM" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-08-03T21:19:20Z</published>
+    <arxiv:primary_category term="q-bio.BM"/>
+    <arxiv:journal_ref>PMLR 267, 2025</arxiv:journal_ref>
+    <author>
+      <name>Sharmi Banerjee</name>
+    </author>
+    <author>
+      <name>Mostafa Karimi</name>
+    </author>
+    <author>
+      <name>Melih Yilmaz</name>
+    </author>
+    <author>
+      <name>Tommi Jaakkola</name>
+    </author>
+    <author>
+      <name>Bella Dubrov</name>
+    </author>
+    <author>
+      <name>Shang Shang</name>
+    </author>
+    <author>
+      <name>Ron Benson</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2505.10711v1</id>
+    <title>GNN-Suite: a Graph Neural Network Benchmarking Framework for Biomedical Informatics</title>
+    <updated>2025-05-15T21:14:30Z</updated>
+    <link href="https://arxiv.org/abs/2505.10711v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2505.10711v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>We present GNN-Suite, a robust modular framework for constructing and benchmarking Graph Neural Network (GNN) architectures in computational biology. GNN-Suite standardises experimentation and reproducibility using the Nextflow workflow to evaluate GNN performance. We demonstrate its utility in identifying cancer-driver genes by constructing molecular networks from protein-protein interaction (PPI) data from STRING and BioGRID and annotating nodes with features from the PCAWG, PID, and COSMIC-CGC repositories.
+  Our design enables fair comparisons among diverse GNN architectures including GAT, GAT3H, GCN, GCN2, GIN, GTN, HGCN, PHGCN, and GraphSAGE and a baseline Logistic Regression (LR) model. All GNNs were configured as standardised two-layer models and trained with uniform hyperparameters (dropout = 0.2; Adam optimiser with learning rate = 0.01; and an adjusted binary cross-entropy loss to address class imbalance) over an 80/20 train-test split for 300 epochs. Each model was evaluated over 10 independent runs with different random seeds to yield statistically robust performance metrics, with balanced accuracy (BACC) as the primary measure. Notably, GCN2 achieved the highest BACC (0.807 +/- 0.035) on a STRING-based network, although all GNN types outperformed the LR baseline, highlighting the advantage of network-based learning over feature-only approaches.
+  Our results show that a common framework for implementing and evaluating GNN architectures aids in identifying not only the best model but also the most effective means of incorporating complementary data. By making GNN-Suite publicly available, we aim to foster reproducible research and promote improved benchmarking standards in computational biology. Future work will explore additional omics datasets and further refine network architectures to enhance predictive accuracy and interpretability in biomedical applications.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-05-15T21:14:30Z</published>
+    <arxiv:comment>Main article 8 pages (20 in total with supplementary information included), 3 main article figures and 3 supplemental figures</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Sebestyén Kamp</name>
+    </author>
+    <author>
+      <name>Giovanni Stracquadanio</name>
+    </author>
+    <author>
+      <name>T. Ian Simpson</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2504.20102v1</id>
+    <title>HyboWaveNet: Hyperbolic Graph Neural Networks with Multi-Scale Wavelet Transform for Protein-Protein Interaction Prediction</title>
+    <updated>2025-04-27T09:20:50Z</updated>
+    <link href="https://arxiv.org/abs/2504.20102v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2504.20102v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Protein-protein interactions (PPIs) are fundamental for deciphering cellular functions,disease pathways,and drug discovery.Although existing neural networks and machine learning methods have achieved high accuracy in PPI prediction,their black-box nature leads to a lack of causal interpretation of the prediction results and difficulty in capturing hierarchical geometries and multi-scale dynamic interaction patterns among proteins.To address these challenges, we propose HyboWaveNet,a novel deep learning framework that collaborates with hyperbolic graphical neural networks (HGNNs) and multiscale graphical wavelet transform for robust PPI prediction. Mapping protein features to Lorentz space simulates hierarchical topological relationships among biomolecules via a hyperbolic distance metric,enabling node feature representations that better fit biological a priori.HyboWaveNet inherently simulates hierarchical and scale-free biological relationships, while the integration of wavelet transforms enables adaptive extraction of local and global interaction features across different resolutions. Our framework generates node feature representations via a graph neural network under the Lorenz model and generates pairs of positive samples under multiple different views for comparative learning, followed by further feature extraction via multi-scale graph wavelet transforms to predict potential PPIs. Experiments on public datasets show that HyboWaveNet improves over both existing state-of-the-art methods. We also demonstrate through ablation experimental studies that the multi-scale graph wavelet transform module improves the predictive performance and generalization ability of HyboWaveNet. This work links geometric deep learning and signal processing to advance PPI prediction, providing a principled approach for analyzing complex biological systems</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-bio.QM" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-04-27T09:20:50Z</published>
+    <arxiv:comment>9 pages</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Qingzhi Yu</name>
+    </author>
+    <author>
+      <name>Shuai Yan</name>
+    </author>
+    <author>
+      <name>Wenfeng Dai</name>
+    </author>
+    <author>
+      <name>Xiang Cheng</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2504.04770v2</id>
+    <title>Bidirectional Hierarchical Protein Multi-Modal Representation Learning</title>
+    <updated>2025-08-10T13:27:55Z</updated>
+    <link href="https://arxiv.org/abs/2504.04770v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2504.04770v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Protein representation learning is critical for numerous biological tasks. Recently, large transformer-based protein language models (pLMs) pretrained on large scale protein sequences have demonstrated significant success in sequence-based tasks. However, pLMs lack structural context. Conversely, graph neural networks (GNNs) designed to leverage 3D structural information have shown promising generalization in protein-related prediction tasks, but their effectiveness is often constrained by the scarcity of labeled structural data. Recognizing that sequence and structural representations are complementary perspectives of the same protein entity, we propose a multimodal bidirectional hierarchical fusion framework to effectively merge these modalities. Our framework employs attention and gating mechanisms to enable effective interaction between pLMs-generated sequential representations and GNN-extracted structural features, improving information exchange and enhancement across layers of the neural network. This bidirectional and hierarchical (Bi-Hierarchical) fusion approach leverages the strengths of both modalities to capture richer and more comprehensive protein representations. Based on the framework, we further introduce local Bi-Hierarchical Fusion with gating and global Bi-Hierarchical Fusion with multihead self-attention approaches. Our method demonstrates consistent improvements over strong baselines and existing fusion techniques in a variety of protein representation learning benchmarks, including enzyme EC classification, model quality assessment, protein-ligand binding affinity prediction, protein-protein binding site prediction, and B cell epitopes prediction. Our method establishes a new state-of-the-art for multimodal protein representation learning, emphasizing the efficacy of Bi-Hierarchical Fusion in bridging sequence and structural modalities.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-bio.MN" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-04-07T06:47:49Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Xuefeng Liu</name>
+    </author>
+    <author>
+      <name>Songhao Jiang</name>
+    </author>
+    <author>
+      <name>Chih-chan Tien</name>
+    </author>
+    <author>
+      <name>Jinbo Xu</name>
+    </author>
+    <author>
+      <name>Rick Stevens</name>
+    </author>
+  </entry>
+</feed>

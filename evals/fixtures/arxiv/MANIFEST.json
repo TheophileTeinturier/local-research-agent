@@ -1,0 +1,38 @@
+{
+  "captured_at": "2026-11-11T08:55:45+00:00",
+  "source": "https://export.arxiv.org/api/query",
+  "files": [
+    {
+      "file": "search_gnn_ppi_10.xml",
+      "description": "search 'graph neural networks protein-protein interaction prediction', sort=date, 10",
+      "request": "max_results=10&search_query=all%3Agraph+AND+all%3Aneural+AND+all%3Anetworks+AND+all%3A%22protein+protein%22+AND+all%3Ainteraction+AND+all%3Aprediction&sortBy=submittedDate&sortOrder=descending&start=0"
+    },
+    {
+      "file": "paper_1706.02216.xml",
+      "description": "lookup 1706.02216",
+      "request": "id_list=1706.02216&max_results=1"
+    },
+    {
+      "file": "not_found.xml",
+      "description": "lookup 2406.99999: no such paper",
+      "request": "id_list=2406.99999&max_results=1"
+    },
+    {
+      "file": "search_no_results.xml",
+      "description": "copy of tests/fixtures/arxiv (search 'qwxzvkjhq zzqplmnb')",
+      "request": null
+    }
+  ],
+  "search_hits": [
+    "2606.01781",
+    "2605.07838",
+    "2603.15047",
+    "2510.22008",
+    "2510.14139",
+    "2509.01916",
+    "2508.01924",
+    "2505.10711",
+    "2504.20102",
+    "2504.04770"
+  ]
+}

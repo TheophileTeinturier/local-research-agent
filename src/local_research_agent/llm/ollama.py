@@ -12,6 +12,9 @@ Checked against https://docs.ollama.com/api/chat, /capabilities/tool-calling and
 - Several tool calls in one response are several entries of `message.tool_calls`; each result
   goes back as its own `{"role": "tool", "tool_name": ..., "content": ...}` message, in call
   order. There is no `tool_call_id` in the documented format (re-checked 2026-11-05).
+- `seed` is an integer inside `options` ("Random seed used for reproducible outputs"); the
+  docs state no determinism guarantee. `keep_alive` is a top-level field (default 5 min);
+  it is not sent, so the server default applies (re-checked 2026-11-10).
 """
 
 from __future__ import annotations
@@ -85,6 +88,8 @@ class OllamaClient:
             "stream": False,
             "options": {"temperature": opts.temperature, "num_ctx": opts.num_ctx},
         }
+        if opts.seed is not None:
+            payload["options"]["seed"] = opts.seed  # a model option, like temperature
         if opts.think is not None:
             payload["think"] = opts.think
         if tools:

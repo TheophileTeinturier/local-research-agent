@@ -74,6 +74,10 @@ class ChatOptions:
     # Qwen3 reasoning. False = no reasoning, True = reasoning, None = model default
     # (the field is not sent at all).
     think: bool | None = False
+    # Sampling seed (Ollama `options.seed`, "for reproducible outputs"). None = not sent,
+    # the server picks one. Same seed + same input is NOT a guarantee of identical output
+    # on a GPU (batching, kernel nondeterminism); see docs/REVIEW_GUIDE.md.
+    seed: int | None = None
 
 
 @dataclass(frozen=True)

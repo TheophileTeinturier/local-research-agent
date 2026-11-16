@@ -13,7 +13,16 @@ import os
 import sys
 from collections.abc import Sequence
 
-from .agent import AgentConfig, AgentLimits, AgentResult, StopReason, run_agent
+from .agent import (
+    DEFAULT_PROMPT_VARIANT,
+    PROMPT_VARIANTS,
+    AgentConfig,
+    AgentLimits,
+    AgentResult,
+    StopReason,
+    get_system_prompt,
+    run_agent,
+)
 from .agent.state import LLMCallRecord, ToolCallRecord
 from .llm import ChatOptions, OllamaClient
 from .observability import configure_logging
@@ -44,6 +53,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--think", action="store_true", help="enable Qwen3 reasoning (slower)")
     parser.add_argument("--num-ctx", type=int, default=options.num_ctx)
     parser.add_argument("--temperature", type=float, default=options.temperature)
+    parser.add_argument(
+        "--prompt-variant",
+        default=DEFAULT_PROMPT_VARIANT,
+        choices=list(PROMPT_VARIANTS),
+        help="named system prompt (default: %(default)s)",
+    )
     parser.add_argument("--max-iterations", type=int, default=limits.max_iterations)
     parser.add_argument(
         "--timeout", type=float, default=limits.total_timeout_s, help="total budget, seconds"
@@ -65,6 +80,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     sys.stdout.reconfigure(errors="replace")  # type: ignore[union-attr]
 
     config = AgentConfig(
+        system_prompt=get_system_prompt(args.prompt_variant),
         limits=AgentLimits(max_iterations=args.max_iterations, total_timeout_s=args.timeout),
         llm_options=ChatOptions(
             temperature=args.temperature, num_ctx=args.num_ctx, think=args.think

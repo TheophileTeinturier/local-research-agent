@@ -93,6 +93,23 @@ def tool_call_response(*calls: tuple[str, dict[str, Any] | str]) -> LLMResponse:
     )
 
 
+def make_eval_fixtures(directory: Path) -> Path:
+    """A small evals fixtures dir built from the recorded test fixtures.
+
+    search.xml: 5 hits (2606.01781 first); paper.xml: the lookup of 2606.01781;
+    not_found.xml: arXiv's answer for an unknown id; empty.xml: a zero-hit search.
+    """
+    directory.mkdir(parents=True, exist_ok=True)
+    for source, target in [
+        ("search_gnn_ppi.xml", "search.xml"),
+        ("paper_details.xml", "paper.xml"),
+        ("unknown_id.xml", "not_found.xml"),
+        ("search_no_results.xml", "empty.xml"),
+    ]:
+        (directory / target).write_bytes((ARXIV_FIXTURES / source).read_bytes())
+    return directory
+
+
 class FakeSleep:
     """Injectable `sleep`: records each duration and advances `clock` instead of sleeping."""
 
