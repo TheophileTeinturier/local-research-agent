@@ -1,17 +1,21 @@
 """Command-line entry point.
 
-    python -m local_research_agent.cli "What is 17 * 23 + 4?"
+    python -m local_research_agent.cli "What is 17 * 23 + 4?" [--tools local|mcp]
 
-stdout gets only the answer and the trace; JSON logs go to stderr.
-Exit code: 0 when the model answered, 1 for any other stop reason.
+`--tools mcp` runs the same tools in an MCP server subprocess (stdio) instead of in-process;
+the agent loop is the same. stdout gets only the answer and the trace; JSON logs go to stderr.
+Exit code: 0 when the model answered, 1 for any other stop reason, 2 when the MCP tool
+server could not be started (an infrastructure error: the agent never ran).
 """
 
 from __future__ import annotations
 
 import argparse
+import contextlib
 import os
 import sys
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from .agent import (
     DEFAULT_PROMPT_VARIANT,
@@ -26,9 +30,25 @@ from .agent import (
 from .agent.state import LLMCallRecord, ToolCallRecord
 from .llm import ChatOptions, OllamaClient
 from .observability import configure_logging
-from .tools import ArxivClient, build_default_registry
+from .tools import ArxivClient, ToolRegistry, build_default_registry
 
 _PREVIEW_CHARS = 120
+
+EXIT_MCP_STARTUP_FAILED = 2
+
+
+@dataclass(frozen=True)
+class ToolBackend:
+    """Which backend served the tools, for the trace."""
+
+    name: str  # "local" | "mcp"
+    mcp_startup_ms: float | None = None
+
+    def describe(self) -> str:
+        if self.mcp_startup_ms is None:
+            return f"tools {self.name}"
+        return f"tools {self.name} (server startup {self.mcp_startup_ms:.0f} ms)"
+
 
 STOP_EXPLANATIONS: dict[StopReason, str] = {
     StopReason.FINAL_ANSWER: "the model answered",
@@ -59,6 +79,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=list(PROMPT_VARIANTS),
         help="named system prompt (default: %(default)s)",
     )
+    parser.add_argument(
+        "--tools",
+        choices=["local", "mcp"],
+        default="local",
+        help="run the tools in-process, or in an MCP server subprocess (default: %(default)s)",
+    )
     parser.add_argument("--max-iterations", type=int, default=limits.max_iterations)
     parser.add_argument(
         "--timeout", type=float, default=limits.total_timeout_s, help="total budget, seconds"
@@ -86,18 +112,47 @@ def main(argv: Sequence[str] | None = None) -> int:
             temperature=args.temperature, num_ctx=args.num_ctx, think=args.think
         ),
     )
-    with (
-        ArxivClient() as arxiv,
-        OllamaClient.from_env(model=args.model, host=args.host) as llm,
-    ):
-        registry = build_default_registry(arxiv_client=arxiv)
+    # ExitStack: whatever happens (an exception included), the arXiv client is closed and the
+    # MCP bridge is closed, which terminates the server subprocess.
+    with contextlib.ExitStack() as stack:
+        if args.tools == "mcp":
+            # Imported only in MCP mode: local runs never load the MCP SDK.
+            from .mcp.client import McpStartupError
+
+            try:
+                registry, backend = _mcp_tools(stack, config.limits.tool_timeout_s, args.log_level)
+            except McpStartupError as exc:
+                print(f"error: {exc}", file=sys.stderr)
+                return EXIT_MCP_STARTUP_FAILED
+        else:
+            arxiv = stack.enter_context(ArxivClient())
+            registry, backend = build_default_registry(arxiv_client=arxiv), ToolBackend("local")
+        llm = stack.enter_context(OllamaClient.from_env(model=args.model, host=args.host))
         result = run_agent(llm, registry, config, args.question)
 
-    print(format_result(result))
+    print(format_result(result, backend))
     return 0 if result.stop_reason is StopReason.FINAL_ANSWER else 1
 
 
-def format_result(result: AgentResult) -> str:
+def _mcp_tools(
+    stack: contextlib.ExitStack, tool_timeout_s: float, log_level: str
+) -> tuple[ToolRegistry, ToolBackend]:
+    """Start the MCP server (before the agent loop) and wrap it in a registry.
+
+    Raises `McpStartupError`. The bridge is registered on `stack` BEFORE it starts, so even
+    a failed start leaves no process behind.
+    """
+    from .mcp.client import McpClientBridge, server_parameters
+    from .mcp.provider import McpToolProvider, call_timeout_for
+
+    bridge = McpClientBridge(server_parameters(log_level=log_level))
+    stack.callback(bridge.close)
+    bridge.start()
+    provider = McpToolProvider(bridge, call_timeout_s=call_timeout_for(tool_timeout_s))
+    return ToolRegistry(providers=[provider]), ToolBackend("mcp", bridge.startup_ms)
+
+
+def format_result(result: AgentResult, backend: ToolBackend | None = None) -> str:
     """Answer (or explanation), then a one-line summary and one line per LLM/tool call."""
     if result.final_answer is not None:
         head = result.final_answer.strip() or "(empty answer)"
@@ -113,7 +168,7 @@ def format_result(result: AgentResult) -> str:
         f"trace: stop_reason={result.stop_reason.value} | iterations={m.iterations} "
         f"| tokens in={m.prompt_tokens} out={m.completion_tokens} "
         f"| llm {m.llm_latency_ms:.0f} ms (model load {m.llm_load_ms:.0f} ms) "
-        f"| wall {m.wall_time_ms:.0f} ms",
+        f"| wall {m.wall_time_ms:.0f} ms" + ("" if backend is None else f" | {backend.describe()}"),
     ]
     for llm_call in result.state.llm_calls:
         lines.append(f"  {llm_call.iteration}. {_format_llm_call(llm_call)}")

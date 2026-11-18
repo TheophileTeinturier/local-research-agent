@@ -136,6 +136,10 @@ class BatchSummary:
     measured_runs: int
     inconclusive: list[InconclusiveRun]
     excluded: list[ExcludedRun]  # harness errors
+    # Per tool: latency of the executed calls (repetition warnings excluded), measured by the
+    # agent's registry: in-process (local) or round trip through MCP (mcp).
+    tool_latency: dict[str, Stats] = field(default_factory=dict)
+    mcp_startup: Stats | None = None  # server spawn + handshake, mcp runs only
 
     @property
     def too_many_inconclusive(self) -> bool:
@@ -184,6 +188,12 @@ def summarize(batch: Batch, runs: Sequence[RunRecord]) -> BatchSummary:
         for label, attr in METRICS
         if (vals := [_metric(r, attr) for r in measured])
     }
+    latencies: dict[str, list[float]] = {}
+    for record in measured:
+        for call in record.trace.tool_calls:
+            if not call.repeated and call.duration_ms is not None:
+                latencies.setdefault(call.name, []).append(call.duration_ms)
+    startups = [r.mcp_startup_ms for r in measured if r.mcp_startup_ms is not None]
     return BatchSummary(
         batch=batch,
         total=total,
@@ -193,7 +203,13 @@ def summarize(batch: Batch, runs: Sequence[RunRecord]) -> BatchSummary:
         measured_runs=len(measured),
         inconclusive=inconclusive,
         excluded=excluded,
+        tool_latency={name: _stats(values) for name, values in latencies.items()},
+        mcp_startup=_stats(startups) if startups else None,
     )
+
+
+def _stats(values: Sequence[float]) -> Stats:
+    return Stats(statistics.median(values), max(values))
 
 
 def _metric(record: RunRecord, attr: str) -> float:
@@ -290,6 +306,20 @@ def render_report(summary: BatchSummary) -> str:
         "|---|---|---|",
     ]
     lines += [f"| {k} | {s.median:.0f} | {s.max:.0f} |" for k, s in summary.metrics.items()]
+    if summary.mcp_startup is not None:
+        s = summary.mcp_startup
+        lines.append(f"| MCP server startup (ms) | {s.median:.0f} | {s.max:.0f} |")
+    if summary.tool_latency:
+        lines += [
+            "",
+            f"## Tool call latency ({_backend(summary.batch.config)} backend, ms)",
+            "",
+            "| tool | median | max |",
+            "|---|---|---|",
+        ]
+        lines += [
+            f"| {name} | {s.median:.2f} | {s.max:.2f} |" for name, s in summary.tool_latency.items()
+        ]
     return "\n".join(lines) + "\n"
 
 
@@ -328,6 +358,23 @@ def render_comparison(a: BatchSummary, b: BatchSummary) -> str:
     for key, _attr in METRICS:
         sa, sb = a.metrics.get(key), b.metrics.get(key)
         lines.append(f"| {key} | {_med(sa)} | {_med(sb)} |")
+    lines.append(f"| MCP server startup (ms) | {_med(a.mcp_startup)} | {_med(b.mcp_startup)} |")
+
+    lines += [
+        "",
+        "## Tool call latency (median ms)",
+        "",
+        f"Backends: {la} = {_backend(a.batch.config)}, {lb} = {_backend(b.batch.config)}. "
+        "Local = in-process execution; mcp = round trip through the bridge and the server.",
+        "",
+        f"| tool | {la} | {lb} |",
+        "|---|---|---|",
+    ]
+    tools = [*a.tool_latency, *(t for t in b.tool_latency if t not in a.tool_latency)]
+    lines += [
+        f"| {t} | {_med(a.tool_latency.get(t), 2)} | {_med(b.tool_latency.get(t), 2)} |"
+        for t in tools
+    ] or ["| (no tool calls) | - | - |"]
     lines.append("")
     lines.append(
         f"Excluded runs: {la} {a.total.excluded}; {lb} {b.total.excluded}. "
@@ -353,7 +400,8 @@ def _config_lines(batch: Batch) -> list[str]:
         f"`{c.get('prompt_variant')}` (sha256 {str(c.get('system_prompt_sha256', ''))[:12]}), "
         f"num_ctx {c.get('num_ctx')}, temperature {c.get('temperature')}, "
         f"seed {'= repetition index' if seed is None else seed}, "
-        f"repetitions {c.get('repetitions')}, suite `{c.get('suite')}`",
+        f"repetitions {c.get('repetitions')}, suite `{c.get('suite')}`, "
+        f"tools backend `{_backend(c)}`",
         f"- warm-up (excluded from metrics): {warm_text}",
     ]
 
@@ -396,7 +444,17 @@ def _failing_lines(cases: Sequence[CaseSummary]) -> list[str]:
     return lines
 
 
+# Keys added to the batch config after some batches were stored, with the value those older
+# batches implicitly had: compared as such, so "missing" vs "local" is not a difference.
+_CONFIG_DEFAULTS: dict[str, object] = {"tool_backend": "local"}
+
+
+def _backend(config: dict[str, object]) -> object:
+    return config.get("tool_backend", _CONFIG_DEFAULTS["tool_backend"])
+
+
 def _config_diff(a: dict[str, object], b: dict[str, object]) -> list[tuple[str, object, object]]:
+    a, b = {**_CONFIG_DEFAULTS, **a}, {**_CONFIG_DEFAULTS, **b}
     keys = sorted(a.keys() | b.keys())
     return [(k, a.get(k), b.get(k)) for k in keys if a.get(k) != b.get(k) and k != "label"]
 
@@ -415,8 +473,8 @@ def _diff(a: PassCount | None, b: PassCount | None) -> str:
     return f"{points:+.0f} pp"
 
 
-def _med(stats: Stats | None) -> str:
-    return "-" if stats is None else f"{stats.median:.0f}"
+def _med(stats: Stats | None, decimals: int = 0) -> str:
+    return "-" if stats is None else f"{stats.median:.{decimals}f}"
 
 
 # --- CLI ------------------------------------------------------------------------------------

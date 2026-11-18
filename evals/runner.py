@@ -4,6 +4,11 @@
 UNCHANGED `run_agent`, then evaluates the checks. It never raises (except Ctrl-C/SystemExit):
 any exception, in the agent or in the harness, becomes a record with `harness_error`.
 
+With `tool_backend="mcp"`, the case's world is built INSIDE an MCP server subprocess
+(`evals.mcp_factory`), one server per run, so its cold start is measured (`mcp_startup_ms`).
+A server that fails to start or dies during the run makes the run a `harness_error`: it
+says nothing about the agent.
+
 `run_batch` runs every case `repetitions` times, repetition-major (all cases once, then all
 again), so a slow drift of the machine (thermal throttling, other load) is spread across cases.
 `warm_up` makes one untimed call first so the model load is not charged to the first case.
@@ -12,12 +17,14 @@ again), so a slow drift of the machine (thermal throttling, other load) is sprea
 from __future__ import annotations
 
 import hashlib
+import os
 import re
+import tempfile
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from local_research_agent.agent import (
     DEFAULT_PROMPT_VARIANT,
@@ -29,14 +36,22 @@ from local_research_agent.agent import (
 )
 from local_research_agent.llm import ChatOptions, LLMClient, LLMError, user_message
 from local_research_agent.llm.ollama import DEFAULT_MODEL
-from local_research_agent.tools import build_registry
+from local_research_agent.tools import ToolRegistry, build_registry
 
 from .arxiv_fake import CaseArxivTransport
 from .checks import run_check
+from .mcp_factory import CASE_FILE_ENV, MISSES_FILE_ENV, read_misses, write_case_file
 from .records import RunRecord, RunTrace, ToolCallTrace
-from .suite import FIXTURES_DIR, Case
+from .suite import EVALS_DIR, FIXTURES_DIR, Case
 
 _DEFAULT_OPTIONS = ChatOptions()
+
+ToolBackendName = Literal["local", "mcp"]
+TOOL_BACKENDS: tuple[ToolBackendName, ...] = ("local", "mcp")
+# The server-side registry factory of MCP runs (module-level so a test can point it elsewhere).
+MCP_REGISTRY_FACTORY = "evals.mcp_factory:build"
+MCP_STARTUP_TIMEOUT_S = 30.0
+REPO_ROOT = EVALS_DIR.parent
 
 WARMUP_PROMPT = "Reply with the single word OK."
 LABEL_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}")
@@ -55,9 +70,12 @@ class EvalConfig:
     repetitions: int = 1
     label: str = "unlabeled"
     limits: AgentLimits = field(default_factory=AgentLimits)
+    tool_backend: ToolBackendName = "local"  # where the tools run: in-process, or MCP server
 
     def __post_init__(self) -> None:
         get_system_prompt(self.prompt_variant)  # ValueError for an unknown variant
+        if self.tool_backend not in TOOL_BACKENDS:
+            raise ValueError(f"tool_backend must be one of {TOOL_BACKENDS}")
         if self.repetitions < 1:
             raise ValueError("repetitions must be >= 1")
         if not LABEL_RE.fullmatch(self.label):
@@ -131,12 +149,12 @@ def run_case(
         "prompt_variant": config.prompt_variant,
         "seed": config.seed_for(repetition),
         "expected_stop_reason": case.expected_stop_reason,
+        "tool_backend": config.tool_backend,
     }
+    run = _run_mcp if config.tool_backend == "mcp" else _run_local
     try:
-        transport = CaseArxivTransport(case.arxiv, fixtures_dir)
-        registry = build_registry(arxiv_transport=transport, clock=lambda: case.frozen_now)
-        result = run_agent(llm, registry, config.agent_config(repetition), case.question)
-        trace = trace_from_result(case.question, result)
+        outcome = run(case, config, repetition, llm, fixtures_dir)
+        trace = trace_from_result(case.question, outcome.result)
         checks = tuple(
             run_check(spec.name, spec.params, trace, heuristic=spec.heuristic)
             for spec in case.all_checks()
@@ -150,7 +168,7 @@ def run_case(
             harness_error=f"{type(exc).__name__}: {exc}",
         )
 
-    metrics = result.metrics
+    result, metrics = outcome.result, outcome.result.metrics
     return RunRecord(
         **base,
         trace=trace,
@@ -161,9 +179,72 @@ def run_case(
         llm_load_ms=metrics.llm_load_ms,
         wall_time_ms=metrics.wall_time_ms,
         agent_error=result.state.error,
-        fixture_misses=tuple(transport.misses),
+        fixture_misses=outcome.fixture_misses,
         checks=checks,
+        mcp_startup_ms=outcome.mcp_startup_ms,
     )
+
+
+class McpHarnessError(RuntimeError):
+    """The MCP server died during the run: an infrastructure failure, not the agent's."""
+
+
+@dataclass(frozen=True)
+class _Outcome:
+    result: AgentResult
+    fixture_misses: tuple[str, ...]
+    mcp_startup_ms: float | None = None
+
+
+def _run_local(
+    case: Case, config: EvalConfig, repetition: int, llm: LLMClient, fixtures_dir: Path
+) -> _Outcome:
+    transport = CaseArxivTransport(case.arxiv, fixtures_dir)
+    registry = build_registry(arxiv_transport=transport, clock=lambda: case.frozen_now)
+    result = run_agent(llm, registry, config.agent_config(repetition), case.question)
+    return _Outcome(result, tuple(transport.misses))
+
+
+def _run_mcp(
+    case: Case, config: EvalConfig, repetition: int, llm: LLMClient, fixtures_dir: Path
+) -> _Outcome:
+    """One server per run: case file in, misses file out (see `evals.mcp_factory`).
+
+    Raises `McpStartupError` / `McpHarnessError`, which `run_case` records as harness_error.
+    """
+    # Imported here: local batches never load the MCP SDK.
+    from local_research_agent.mcp.client import McpClientBridge, server_parameters
+    from local_research_agent.mcp.provider import McpToolProvider, call_timeout_for
+
+    with tempfile.TemporaryDirectory(prefix="lra-eval-") as tmp:
+        case_file, misses_file = Path(tmp) / "case.json", Path(tmp) / "misses.txt"
+        write_case_file(case_file, case, fixtures_dir)
+        params = server_parameters(
+            registry_factory=MCP_REGISTRY_FACTORY,
+            extra_env={
+                # The server must import `evals` (repo root, not part of the installed wheel).
+                "PYTHONPATH": os.pathsep.join(
+                    filter(None, [str(REPO_ROOT), os.environ.get("PYTHONPATH")])
+                ),
+                CASE_FILE_ENV: str(case_file),
+                MISSES_FILE_ENV: str(misses_file),
+            },
+            cwd=REPO_ROOT,
+        )
+        bridge = McpClientBridge(params)
+        try:
+            bridge.start(MCP_STARTUP_TIMEOUT_S)
+            provider = McpToolProvider(
+                bridge, call_timeout_s=call_timeout_for(config.limits.tool_timeout_s)
+            )
+            registry = ToolRegistry(providers=[provider])
+            result = run_agent(llm, registry, config.agent_config(repetition), case.question)
+            if bridge.broken is not None:
+                raise McpHarnessError(bridge.broken)
+            startup_ms = bridge.startup_ms
+        finally:
+            bridge.close()  # terminates the server before the temp dir is removed
+        return _Outcome(result, read_misses(misses_file), startup_ms)
 
 
 def run_batch(
@@ -195,6 +276,7 @@ def trace_from_result(question: str, result: AgentResult) -> RunTrace:
             content=c.content,
             repeated=c.repeated,
             error_type=c.error_type,
+            duration_ms=c.duration_ms,
         )
         for c in result.state.tool_calls
     )

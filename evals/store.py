@@ -4,8 +4,10 @@
     runs           one row per RunRecord (scalar columns + `trace_json` for the rest)
     check_results  one row per check verdict of a run
 
-The schema is created if missing. `schema_version` holds one integer; a database with another
-version is refused rather than silently misread (delete it or migrate it by hand).
+The schema is created if missing. `schema_version` holds one integer. A version-1 database
+(before MCP) is migrated in place to version 2 in ONE transaction (two added columns, old
+runs get `tool_backend='local'`): either everything is applied or nothing is. Any other
+version is refused rather than silently misread.
 `passed` / `passed_with_heuristics` are stored for SQL convenience but recomputed from the
 check rows on load (`RunRecord.passed`), so the two can never disagree in the harness.
 """
@@ -22,7 +24,7 @@ from typing import Any
 from .records import CheckResult, RunRecord, RunTrace, ToolCallTrace
 from .suite import EVALS_DIR
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DEFAULT_DB_PATH = EVALS_DIR / "results" / "evals.sqlite"
 
 _SCHEMA = """
@@ -61,7 +63,9 @@ CREATE TABLE IF NOT EXISTS runs (
     fixture_miss INTEGER NOT NULL,   -- number of arXiv requests no fixture covered
     harness_error TEXT,
     final_answer TEXT,
-    trace_json TEXT NOT NULL
+    trace_json TEXT NOT NULL,
+    tool_backend TEXT NOT NULL DEFAULT 'local',  -- 'local' | 'mcp' (schema v2)
+    mcp_startup_ms REAL                          -- NULL for local runs (schema v2)
 );
 CREATE INDEX IF NOT EXISTS runs_by_batch ON runs (batch_id);
 CREATE TABLE IF NOT EXISTS check_results (
@@ -74,6 +78,14 @@ CREATE TABLE IF NOT EXISTS check_results (
 );
 CREATE INDEX IF NOT EXISTS checks_by_run ON check_results (run_id);
 """
+
+# v1 -> v2: the MCP tool backend. Applied inside one explicit transaction (SQLite DDL is
+# transactional), together with the version bump.
+_MIGRATION_V1_TO_V2 = (
+    "ALTER TABLE runs ADD COLUMN tool_backend TEXT NOT NULL DEFAULT 'local'",
+    "ALTER TABLE runs ADD COLUMN mcp_startup_ms REAL",
+    "UPDATE schema_version SET version = 2",
+)
 
 
 class StoreError(RuntimeError):
@@ -106,15 +118,37 @@ class ResultStore:
             raise
 
     def _init_schema(self) -> None:
+        # Check the version BEFORE running the CREATE script: on an existing database the
+        # script is a no-op (IF NOT EXISTS), so it never touches an unknown schema.
+        version = self._existing_version()
+        if version is not None and version not in (1, SCHEMA_VERSION):
+            raise StoreError(f"database schema version {version}, expected {SCHEMA_VERSION}")
         with self._db:
             self._db.executescript(_SCHEMA)
-            row = self._db.execute("SELECT version FROM schema_version").fetchone()
-            if row is None:
+            if version is None:
                 self._db.execute("INSERT INTO schema_version VALUES (?)", (SCHEMA_VERSION,))
-            elif row["version"] != SCHEMA_VERSION:
-                raise StoreError(
-                    f"database schema version {row['version']}, expected {SCHEMA_VERSION}"
-                )
+        if version == 1:
+            self._migrate(_MIGRATION_V1_TO_V2)
+
+    def _existing_version(self) -> int | None:
+        exists = self._db.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'schema_version'"
+        ).fetchone()
+        if exists is None:
+            return None
+        row = self._db.execute("SELECT version FROM schema_version").fetchone()
+        return None if row is None else int(row["version"])
+
+    def _migrate(self, statements: tuple[str, ...]) -> None:
+        """All statements in one transaction: on any error, the database is left untouched."""
+        self._db.execute("BEGIN")
+        try:
+            for statement in statements:
+                self._db.execute(statement)
+        except BaseException:
+            self._db.rollback()
+            raise
+        self._db.commit()
 
     # --- writing ------------------------------------------------------------------------------
 
@@ -171,6 +205,8 @@ class ResultStore:
             "harness_error": record.harness_error,
             "final_answer": trace.final_answer,
             "trace_json": record.to_trace_json(),
+            "tool_backend": record.tool_backend,
+            "mcp_startup_ms": record.mcp_startup_ms,
         }
         columns = ", ".join(values)
         marks = ", ".join(f":{name}" for name in values)
@@ -272,6 +308,8 @@ def _record(row: sqlite3.Row, checks: tuple[CheckResult, ...]) -> RunRecord:
         fixture_misses=tuple(extra["fixture_misses"]),
         harness_error=row["harness_error"],
         checks=checks,
+        tool_backend=row["tool_backend"],
+        mcp_startup_ms=row["mcp_startup_ms"],
     )
 
 

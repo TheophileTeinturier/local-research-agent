@@ -1,4 +1,5 @@
-"""Tools: definitions (`Tool`), results (`ToolResult`), the `ToolRegistry`, and built-in tools."""
+"""Tools: definitions (`Tool`), results (`ToolResult`), providers, the `ToolRegistry`, and
+built-in tools."""
 
 from typing import Any
 
@@ -9,6 +10,7 @@ from .arxiv.testing import offline_arxiv_client
 from .base import Tool, ToolError, ToolResult
 from .calculator import calculator_tool
 from .current_date import DateClock, current_date_tool, make_current_date_tool
+from .providers import LocalToolProvider, ToolProvider, ToolSchema
 from .registry import DEFAULT_MAX_OUTPUT_CHARS, ToolRegistry
 
 
@@ -46,10 +48,13 @@ __all__ = [
     "DEFAULT_MAX_OUTPUT_CHARS",
     "ArxivClient",
     "DateClock",
+    "LocalToolProvider",
     "Tool",
     "ToolError",
+    "ToolProvider",
     "ToolRegistry",
     "ToolResult",
+    "ToolSchema",
     "build_default_registry",
     "build_registry",
     "calculator_tool",

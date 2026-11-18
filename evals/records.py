@@ -23,6 +23,9 @@ class ToolCallTrace:
     content: str  # the observation the model received
     repeated: bool = False  # True: not executed, a repetition warning was sent instead
     error_type: str | None = None
+    # Measured by the agent's registry: in-process execution (local) or the full round trip
+    # through the bridge and the server (mcp). None in batches recorded before it existed.
+    duration_ms: float | None = None
 
     def args(self) -> dict[str, Any]:
         """Decoded arguments; {} when they are not a JSON object (the call then failed)."""
@@ -78,6 +81,8 @@ class RunRecord:
     fixture_misses: tuple[str, ...] = ()  # arXiv requests no fixture covered
     harness_error: str | None = None  # an exception in the agent or the harness
     checks: tuple[CheckResult, ...] = field(default_factory=tuple)
+    tool_backend: str = "local"  # "local" | "mcp"
+    mcp_startup_ms: float | None = None  # server spawn + MCP handshake (mcp runs only)
 
     @property
     def excluded(self) -> bool:

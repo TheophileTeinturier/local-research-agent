@@ -28,7 +28,7 @@ from local_research_agent.observability import configure_logging
 
 from .records import RunRecord
 from .report import INCONCLUSIVE_LIMIT, summarize
-from .runner import EvalConfig, run_batch, warm_up
+from .runner import TOOL_BACKENDS, EvalConfig, run_batch, warm_up
 from .store import DEFAULT_DB_PATH, ResultStore
 from .suite import EVALS_DIR, SuiteError, load_suite, resolve_suite_path, select_cases
 
@@ -51,6 +51,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--temperature", type=float, default=options.temperature)
     parser.add_argument("--seed", type=int, help="fixed seed (default: the repetition index)")
     parser.add_argument("--repeat", type=int, default=1, help="repetitions per case")
+    parser.add_argument(
+        "--tools",
+        choices=list(TOOL_BACKENDS),
+        default="local",
+        help="tools in-process, or in an MCP server subprocess (one per run)",
+    )
     parser.add_argument("--label", required=True, help="batch name, used by evals.report")
     parser.add_argument("--cases", help="comma-separated case ids (default: all)")
     parser.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
@@ -79,6 +85,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             seed=args.seed,
             repetitions=args.repeat,
             label=args.label,
+            tool_backend=args.tools,
         )
     except (SuiteError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -154,6 +161,8 @@ def format_progress(done: int, total: int, record: RunRecord) -> str:
         f"{head}  {status} stop={trace.stop_reason} it={trace.iterations} "
         f"tools={len(trace.tool_calls)} err={trace.tool_errors} {record.wall_time_ms / 1000:.1f}s"
     )
+    if record.mcp_startup_ms is not None:
+        line += f" (mcp startup {record.mcp_startup_ms / 1000:.1f}s)"
     failed = [c.name.split("(")[0] for c in record.checks if not c.passed and not c.heuristic]
     heuristic = [c.name.split("(")[0] for c in record.checks if not c.passed and c.heuristic]
     if failed:
