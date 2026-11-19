@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/PA0h5NI1ySLxexjS7+wttCvQJww</id>
+  <title>arXiv Query: search_query=all:inductive AND all:representation AND all:learning AND all:large AND all:graphs&amp;id_list=&amp;start=0&amp;max_results=10</title>
+  <updated>2026-11-18T10:46:32Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:inductive+AND+(all:representation+AND+(all:learning+AND+(all:large+AND+all:graphs)))&amp;start=0&amp;max_results=10&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>10</opensearch:itemsPerPage>
+  <opensearch:totalResults>98</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/1710.09471v2</id>
+    <title>Inductive Representation Learning in Large Attributed Graphs</title>
+    <updated>2017-11-22T23:51:39Z</updated>
+    <link href="https://arxiv.org/abs/1710.09471v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/1710.09471v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Graphs (networks) are ubiquitous and allow us to model entities (nodes) and the dependencies (edges) between them. Learning a useful feature representation from graph data lies at the heart and success of many machine learning tasks such as classification, anomaly detection, link prediction, among many others. Many existing techniques use random walks as a basis for learning features or estimating the parameters of a graph model for a downstream prediction task. Examples include recent node embedding methods such as DeepWalk, node2vec, as well as graph-based deep learning algorithms. However, the simple random walk used by these methods is fundamentally tied to the identity of the node. This has three main disadvantages. First, these approaches are inherently transductive and do not generalize to unseen nodes and other graphs. Second, they are not space-efficient as a feature vector is learned for each node which is impractical for large graphs. Third, most of these approaches lack support for attributed graphs.
+  To make these methods more generally applicable, we propose a framework for inductive network representation learning based on the notion of attributed random walk that is not tied to node identity and is instead based on learning a function $Φ: \mathrm{\rm \bf x} \rightarrow w$ that maps a node attribute vector $\mathrm{\rm \bf x}$ to a type $w$. This framework serves as a basis for generalizing existing methods such as DeepWalk, node2vec, and many other previous methods that leverage traditional random walks.</summary>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.SI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2017-10-25T21:40:57Z</published>
+    <arxiv:comment>NIPS WiML</arxiv:comment>
+    <arxiv:primary_category term="stat.ML"/>
+    <author>
+      <name>Nesreen K. Ahmed</name>
+    </author>
+    <author>
+      <name>Ryan A. Rossi</name>
+    </author>
+    <author>
+      <name>Rong Zhou</name>
+    </author>
+    <author>
+      <name>John Boaz Lee</name>
+    </author>
+    <author>
+      <name>Xiangnan Kong</name>
+    </author>
+    <author>
+      <name>Theodore L. Willke</name>
+    </author>
+    <author>
+      <name>Hoda Eldardiry</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/1707.03815v4</id>
+    <title>Deep Gaussian Embedding of Graphs: Unsupervised Inductive Learning via Ranking</title>
+    <updated>2018-02-27T10:20:09Z</updated>
+    <link href="https://arxiv.org/abs/1707.03815v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/1707.03815v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Methods that learn representations of nodes in a graph play a critical role in network analysis since they enable many downstream learning tasks. We propose Graph2Gauss - an approach that can efficiently learn versatile node embeddings on large scale (attributed) graphs that show strong performance on tasks such as link prediction and node classification. Unlike most approaches that represent nodes as point vectors in a low-dimensional continuous space, we embed each node as a Gaussian distribution, allowing us to capture uncertainty about the representation. Furthermore, we propose an unsupervised method that handles inductive learning scenarios and is applicable to different types of graphs: plain/attributed, directed/undirected. By leveraging both the network structure and the associated node attributes, we are able to generalize to unseen nodes without additional training. To learn the embeddings we adopt a personalized ranking formulation w.r.t. the node distances that exploits the natural ordering of the nodes imposed by the network structure. Experiments on real world networks demonstrate the high performance of our approach, outperforming state-of-the-art network embedding methods on several different tasks. Additionally, we demonstrate the benefits of modeling uncertainty - by analyzing it we can estimate neighborhood diversity and detect the intrinsic latent dimensionality of a graph.</summary>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.SI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2017-07-12T17:54:04Z</published>
+    <arxiv:comment>Updated: ICLR 2018 camera-ready version</arxiv:comment>
+    <arxiv:primary_category term="stat.ML"/>
+    <arxiv:journal_ref>International Conference on Learning Representations, ICLR 2018</arxiv:journal_ref>
+    <author>
+      <name>Aleksandar Bojchevski</name>
+    </author>
+    <author>
+      <name>Stephan Günnemann</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2307.15967v2</id>
+    <title>Graph Condensation for Inductive Node Representation Learning</title>
+    <updated>2023-12-09T05:46:16Z</updated>
+    <link href="https://arxiv.org/abs/2307.15967v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2307.15967v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Graph neural networks (GNNs) encounter significant computational challenges when handling large-scale graphs, which severely restricts their efficacy across diverse applications. To address this limitation, graph condensation has emerged as a promising technique, which constructs a small synthetic graph for efficiently training GNNs while retaining performance. However, due to the topology structure among nodes, graph condensation is limited to condensing only the observed training nodes and their corresponding structure, thus lacking the ability to effectively handle the unseen data. Consequently, the original large graph is still required in the inference stage to perform message passing to inductive nodes, resulting in substantial computational demands. To overcome this issue, we propose mapping-aware graph condensation (MCond), explicitly learning the one-to-many node mapping from original nodes to synthetic nodes to seamlessly integrate new nodes into the synthetic graph for inductive representation learning. This enables direct information propagation on the synthetic graph, which is much more efficient than on the original large graph. Specifically, MCond employs an alternating optimization scheme with innovative loss terms from transductive and inductive perspectives, facilitating the mutual promotion between graph condensation and node mapping learning. Extensive experiments demonstrate the efficacy of our approach in inductive inference. On the Reddit dataset, MCond achieves up to 121.5x inference speedup and 55.9x reduction in storage requirements compared with counterparts based on the original graph.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-07-29T12:11:14Z</published>
+    <arxiv:comment>2024 IEEE 40th International Conference on Data Engineering (ICDE)</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Xinyi Gao</name>
+    </author>
+    <author>
+      <name>Tong Chen</name>
+    </author>
+    <author>
+      <name>Yilong Zang</name>
+    </author>
+    <author>
+      <name>Wentao Zhang</name>
+    </author>
+    <author>
+      <name>Quoc Viet Hung Nguyen</name>
+    </author>
+    <author>
+      <name>Kai Zheng</name>
+    </author>
+    <author>
+      <name>Hongzhi Yin</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/1706.02216v4</id>
+    <title>Inductive Representation Learning on Large Graphs</title>
+    <updated>2018-09-10T14:26:58Z</updated>
+    <link href="https://arxiv.org/abs/1706.02216v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/1706.02216v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Low-dimensional embeddings of nodes in large graphs have proved extremely useful in a variety of prediction tasks, from content recommendation to identifying protein functions. However, most existing approaches require that all nodes in the graph are present during training of the embeddings; these previous approaches are inherently transductive and do not naturally generalize to unseen nodes. Here we present GraphSAGE, a general, inductive framework that leverages node feature information (e.g., text attributes) to efficiently generate node embeddings for previously unseen data. Instead of training individual embeddings for each node, we learn a function that generates embeddings by sampling and aggregating features from a node's local neighborhood. Our algorithm outperforms strong baselines on three inductive node-classification benchmarks: we classify the category of unseen nodes in evolving information graphs based on citation and Reddit post data, and we show that our algorithm generalizes to completely unseen graphs using a multi-graph dataset of protein-protein interactions.</summary>
+    <category term="cs.SI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2017-06-07T14:51:05Z</published>
+    <arxiv:comment>Published in NIPS 2017; version with full appendix and minor corrections</arxiv:comment>
+    <arxiv:primary_category term="cs.SI"/>
+    <author>
+      <name>William L. Hamilton</name>
+    </author>
+    <author>
+      <name>Rex Ying</name>
+    </author>
+    <author>
+      <name>Jure Leskovec</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2009.05266v3</id>
+    <title>GTEA: Inductive Representation Learning on Temporal Interaction Graphs via Temporal Edge Aggregation</title>
+    <updated>2023-05-04T03:01:49Z</updated>
+    <link href="https://arxiv.org/abs/2009.05266v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2009.05266v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>In this paper, we propose the Graph Temporal Edge Aggregation (GTEA) framework for inductive learning on Temporal Interaction Graphs (TIGs). Different from previous works, GTEA models the temporal dynamics of interaction sequences in the continuous-time space and simultaneously takes advantage of both rich node and edge/ interaction attributes in the graph. Concretely, we integrate a sequence model with a time encoder to learn pairwise interactional dynamics between two adjacent nodes.This helps capture complex temporal interactional patterns of a node pair along the history, which generates edge embeddings that can be fed into a GNN backbone. By aggregating features of neighboring nodes and the corresponding edge embeddings, GTEA jointly learns both topological and temporal dependencies of a TIG. In addition, a sparsity-inducing self-attention scheme is incorporated for neighbor aggregation, which highlights more important neighbors and suppresses trivial noises for GTEA. By jointly optimizing the sequence model and the GNN backbone, GTEA learns more comprehensive node representations capturing both temporal and graph structural characteristics. Extensive experiments on five large-scale real-world datasets demonstrate the superiority of GTEA over other inductive models.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2020-09-11T07:52:05Z</published>
+    <arxiv:comment>accepted by PAKDD2023</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Siyue Xie</name>
+    </author>
+    <author>
+      <name>Yiming Li</name>
+    </author>
+    <author>
+      <name>Da Sun Handason Tam</name>
+    </author>
+    <author>
+      <name>Xiaxin Liu</name>
+    </author>
+    <author>
+      <name>Qiu Fang Ying</name>
+    </author>
+    <author>
+      <name>Wing Cheong Lau</name>
+    </author>
+    <author>
+      <name>Dah Ming Chiu</name>
+    </author>
+    <author>
+      <name>Shou Zhi Chen</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2408.15619v2</id>
+    <title>Multi-Graph Inductive Representation Learning for Large-Scale Urban Rail Demand Prediction under Disruptions</title>
+    <updated>2025-05-26T11:52:46Z</updated>
+    <link href="https://arxiv.org/abs/2408.15619v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2408.15619v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>With the expansion of cities over time, URT (Urban Rail Transit) networks have also grown significantly. Demand prediction plays an important role in supporting planning, scheduling, fleet management, and other operational decisions. In this study, we propose an Origin-Destination (OD) demand prediction model called Multi-Graph Inductive Representation Learning (mGraphSAGE) for large-scale URT networks under operational uncertainties. Our main contributions are twofold: we enhance prediction results while ensuring scalability for large networks by relying simultaneously on multiple graphs, where each OD pair is a node on a graph and distinct OD relationships, such as temporal and spatial correlations; we show the importance of including operational uncertainties such as train delays and cancellations as inputs in demand prediction for daily operations. The model is validated on three different scales of the URT network in Copenhagen, Denmark. Experimental results show that by leveraging information from neighboring ODs and learning node representations via sampling and aggregation, mGraphSAGE is particularly suitable for OD demand prediction in large-scale URT networks, outperforming reference machine learning methods. Furthermore, during periods with train cancellations and delays, the performance gap between mGraphSAGE and other methods improves compared to normal operating conditions, demonstrating its ability to leverage system reliability information for predicting OD demand under uncertainty.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-08-28T08:20:05Z</published>
+    <arxiv:comment>23 pages, 3 figures</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Dang Viet Anh Nguyen</name>
+    </author>
+    <author>
+      <name>J. Victor Flensburg</name>
+    </author>
+    <author>
+      <name>Fabrizio Cerreto</name>
+    </author>
+    <author>
+      <name>Bianca Pascariu</name>
+    </author>
+    <author>
+      <name>Paola Pellegrini</name>
+    </author>
+    <author>
+      <name>Carlos Lima Azevedo</name>
+    </author>
+    <author>
+      <name>Filipe Rodrigues</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2002.11501v1</id>
+    <title>Dual Graph Representation Learning</title>
+    <updated>2020-02-25T04:50:17Z</updated>
+    <link href="https://arxiv.org/abs/2002.11501v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2002.11501v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Graph representation learning embeds nodes in large graphs as low-dimensional vectors and is of great benefit to many downstream applications. Most embedding frameworks, however, are inherently transductive and unable to generalize to unseen nodes or learn representations across different graphs. Although inductive approaches can generalize to unseen nodes, they neglect different contexts of nodes and cannot learn node embeddings dually. In this paper, we present a context-aware unsupervised dual encoding framework, \textbf{CADE}, to generate representations of nodes by combining real-time neighborhoods with neighbor-attentioned representation, and preserving extra memory of known nodes. We exhibit that our approach is effective by comparing to state-of-the-art methods.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2020-02-25T04:50:17Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Huiling Zhu</name>
+    </author>
+    <author>
+      <name>Xin Luo</name>
+    </author>
+    <author>
+      <name>Hankz Hankui Zhuo</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/1907.04931v4</id>
+    <title>GraphSAINT: Graph Sampling Based Inductive Learning Method</title>
+    <updated>2020-02-16T00:42:48Z</updated>
+    <link href="https://arxiv.org/abs/1907.04931v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/1907.04931v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Graph Convolutional Networks (GCNs) are powerful models for learning representations of attributed graphs. To scale GCNs to large graphs, state-of-the-art methods use various layer sampling techniques to alleviate the "neighbor explosion" problem during minibatch training. We propose GraphSAINT, a graph sampling based inductive learning method that improves training efficiency and accuracy in a fundamentally different way. By changing perspective, GraphSAINT constructs minibatches by sampling the training graph, rather than the nodes or edges across GCN layers. Each iteration, a complete GCN is built from the properly sampled subgraph. Thus, we ensure fixed number of well-connected nodes in all layers. We further propose normalization technique to eliminate bias, and sampling algorithms for variance reduction. Importantly, we can decouple the sampling from the forward and backward propagation, and extend GraphSAINT with many architecture variants (e.g., graph attention, jumping connection). GraphSAINT demonstrates superior performance in both accuracy and training time on five large graphs, and achieves new state-of-the-art F1 scores for PPI (0.995) and Reddit (0.970).</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2019-07-10T21:11:13Z</published>
+    <arxiv:comment>Published at ICLR 2020; Code release: github.com/GraphSAINT/GraphSAINT</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Hanqing Zeng</name>
+    </author>
+    <author>
+      <name>Hongkuan Zhou</name>
+    </author>
+    <author>
+      <name>Ajitesh Srivastava</name>
+    </author>
+    <author>
+      <name>Rajgopal Kannan</name>
+    </author>
+    <author>
+      <name>Viktor Prasanna</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2006.04131v2</id>
+    <title>Deep Graph Contrastive Representation Learning</title>
+    <updated>2020-07-13T16:32:20Z</updated>
+    <link href="https://arxiv.org/abs/2006.04131v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2006.04131v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Graph representation learning nowadays becomes fundamental in analyzing graph-structured data. Inspired by recent success of contrastive methods, in this paper, we propose a novel framework for unsupervised graph representation learning by leveraging a contrastive objective at the node level. Specifically, we generate two graph views by corruption and learn node representations by maximizing the agreement of node representations in these two views. To provide diverse node contexts for the contrastive objective, we propose a hybrid scheme for generating graph views on both structure and attribute levels. Besides, we provide theoretical justification behind our motivation from two perspectives, mutual information and the classical triplet loss. We perform empirical experiments on both transductive and inductive learning tasks using a variety of real-world datasets. Experimental experiments demonstrate that despite its simplicity, our proposed method consistently outperforms existing state-of-the-art methods by large margins. Moreover, our unsupervised method even surpasses its supervised counterparts on transductive tasks, demonstrating its great potential in real-world applications.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2020-06-07T11:50:45Z</published>
+    <arxiv:comment>Work in progress; updated experiments</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Yanqiao Zhu</name>
+    </author>
+    <author>
+      <name>Yichen Xu</name>
+    </author>
+    <author>
+      <name>Feng Yu</name>
+    </author>
+    <author>
+      <name>Qiang Liu</name>
+    </author>
+    <author>
+      <name>Shu Wu</name>
+    </author>
+    <author>
+      <name>Liang Wang</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2107.09422v1</id>
+    <title>Large-scale graph representation learning with very deep GNNs and self-supervision</title>
+    <updated>2021-07-20T11:35:25Z</updated>
+    <link href="https://arxiv.org/abs/2107.09422v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2107.09422v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Effectively and efficiently deploying graph neural networks (GNNs) at scale remains one of the most challenging aspects of graph representation learning. Many powerful solutions have only ever been validated on comparatively small datasets, often with counter-intuitive outcomes -- a barrier which has been broken by the Open Graph Benchmark Large-Scale Challenge (OGB-LSC). We entered the OGB-LSC with two large-scale GNNs: a deep transductive node classifier powered by bootstrapping, and a very deep (up to 50-layer) inductive graph regressor regularised by denoising objectives. Our models achieved an award-level (top-3) performance on both the MAG240M and PCQM4M benchmarks. In doing so, we demonstrate evidence of scalable self-supervised graph representation learning, and utility of very deep GNNs -- both very important open issues. Our code is publicly available at: https://github.com/deepmind/deepmind-research/tree/master/ogb_lsc.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.SI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2021-07-20T11:35:25Z</published>
+    <arxiv:comment>To appear at KDD Cup 2021. 13 pages, 3 figures. All authors contributed equally</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Ravichandra Addanki</name>
+    </author>
+    <author>
+      <name>Peter W. Battaglia</name>
+    </author>
+    <author>
+      <name>David Budden</name>
+    </author>
+    <author>
+      <name>Andreea Deac</name>
+    </author>
+    <author>
+      <name>Jonathan Godwin</name>
+    </author>
+    <author>
+      <name>Thomas Keck</name>
+    </author>
+    <author>
+      <name>Wai Lok Sibon Li</name>
+    </author>
+    <author>
+      <name>Alvaro Sanchez-Gonzalez</name>
+    </author>
+    <author>
+      <name>Jacklynn Stott</name>
+    </author>
+    <author>
+      <name>Shantanu Thakoor</name>
+    </author>
+    <author>
+      <name>Petar Veličković</name>
+    </author>
+  </entry>
+</feed>

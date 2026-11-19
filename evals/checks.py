@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import inspect
 import re
+import types
 import typing
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -96,6 +97,21 @@ def tool_arg_equals(trace: RunTrace, *, tool: str, arg: str, value: Any) -> Verd
     return value in seen, f"{tool}.{arg} values: {seen}, need {value!r}"
 
 
+def tool_arg_covers(trace: RunTrace, *, tool: str, arg: str, values: list) -> Verdict:
+    """Every one of `values` was the `arg` of at least one executed `tool` call, ok or failed.
+
+    Strings are compared after stripping whitespace and a trailing arXiv version
+    ("1706.02216v2" == "1706.02216"); nothing else is normalized ("arXiv:1706.02216" is a
+    different value, as in `tool_arg_equals`). Repetition warnings are not calls.
+    """
+    seen = [c.args().get(arg) for c in _executed(trace, tool)]
+    normalized = {_normalize_arg(v) for v in seen}
+    missing = [v for v in values if _normalize_arg(v) not in normalized]
+    if missing:
+        return False, f"{tool}.{arg} values: {seen}, missing {missing}"
+    return True, f"{tool}.{arg} values: {seen}, all of {values} covered"
+
+
 def answer_matches(trace: RunTrace, *, regex: str) -> Verdict:
     """The final answer matches `regex` (re.search)."""
     match = re.search(regex, _answer(trace))
@@ -131,10 +147,61 @@ def cited_ids_subset_of_tool_ids(trace: RunTrace, *, include_question: bool = Tr
     return True, f"{len(cited)} cited id(s), all known"
 
 
-def cited_ids_count(trace: RunTrace, *, exactly: int) -> Verdict:
-    """The answer cites exactly `exactly` distinct arXiv ids."""
+DETAILS_TOOL = "get_paper_details"
+
+
+def cited_ids_subset_of_opened_ids(trace: RunTrace) -> Verdict:
+    """Every arXiv id in the answer was OPENED: the `arxiv_id` of a successful details call.
+
+    Stricter than `cited_ids_subset_of_tool_ids`: an id seen only in search results (a title
+    and a 200-char snippet) does not count, nor does the question. A failed or repeated call
+    opens nothing (a repeat of a successful call is covered by that earlier call). The
+    argument is normalized like the answer ("arXiv:1706.02216v2" -> "1706.02216").
+    """
+    cited = extract_arxiv_ids(trace.final_answer)
+    opened: set[str] = set()
+    for call in _executed(trace, DETAILS_TOOL):
+        arg = call.args().get("arxiv_id")
+        if call.ok and isinstance(arg, str):
+            opened |= extract_arxiv_ids(arg)
+    unopened = sorted(cited - opened)
+    if unopened:
+        return False, f"cited ids never opened with {DETAILS_TOOL}: {unopened}"
+    return True, f"{len(cited)} cited id(s), all opened"
+
+
+def cited_ids_count(
+    trace: RunTrace,
+    *,
+    exactly: int | None = None,
+    min: int | None = None,
+    max: int | None = None,
+) -> Verdict:
+    """The answer cites `exactly` distinct arXiv ids, or between `min` and `max` (inclusive).
+
+    Give `exactly`, or `min` and/or `max` (checked at load time by `_validate_count`).
+    """
     cited = sorted(extract_arxiv_ids(trace.final_answer))
-    return len(cited) == exactly, f"{len(cited)} distinct id(s) cited {cited}, need {exactly}"
+    n = len(cited)
+    if exactly is not None:
+        return n == exactly, f"{n} distinct id(s) cited {cited}, need {exactly}"
+    passed = (min is None or n >= min) and (max is None or n <= max)
+    bounds = " and ".join(
+        part
+        for part in (f">= {min}" if min is not None else "", f"<= {max}" if max is not None else "")
+        if part
+    )
+    return passed, f"{n} distinct id(s) cited {cited}, need {bounds}"
+
+
+def _validate_count(params: Mapping[str, Any]) -> None:
+    given = {k for k in ("exactly", "min", "max") if params.get(k) is not None}
+    if not given:
+        raise CheckSpecError("cited_ids_count: give `exactly`, or `min` and/or `max`")
+    if "exactly" in given and given != {"exactly"}:
+        raise CheckSpecError("cited_ids_count: `exactly` cannot be combined with `min`/`max`")
+    if given == {"min", "max"} and params["min"] > params["max"]:
+        raise CheckSpecError(f"cited_ids_count: min {params['min']} > max {params['max']}")
 
 
 def max_iterations(trace: RunTrace, *, n: int) -> Verdict:
@@ -155,12 +222,22 @@ def stop_reason_is(trace: RunTrace, *, value: str) -> Verdict:
 # --- heuristic checks -----------------------------------------------------------------------
 
 
+def heuristic_answer_matches(trace: RunTrace, *, regex: str) -> Verdict:
+    """HEURISTIC: the answer's free wording matches `regex` (asks back, names the topic...).
+
+    Same mechanics as `answer_matches`; separate so it is always reported as heuristic and
+    never part of `passed`.
+    """
+    return answer_matches(trace, regex=regex)
+
+
 def answer_signals_failure(trace: RunTrace, *, regex: str) -> Verdict:
     """HEURISTIC: the answer's wording says something went wrong (not found, unavailable...).
 
-    Same mechanics as `answer_matches`; separate so it is always reported as heuristic.
+    `heuristic_answer_matches` under its original name, kept so the existing cases and the
+    check labels of past batches stay unchanged.
     """
-    return answer_matches(trace, regex=regex)
+    return heuristic_answer_matches(trace, regex=regex)
 
 
 # --- registry and validation ----------------------------------------------------------------
@@ -170,6 +247,8 @@ def answer_signals_failure(trace: RunTrace, *, regex: str) -> Verdict:
 class CheckDef:
     fn: Callable[..., Verdict]
     heuristic: bool = False
+    # Cross-parameter rules the type hints cannot express; raises CheckSpecError.
+    validate: Callable[[Mapping[str, Any]], None] | None = None
 
 
 CHECKS: dict[str, CheckDef] = {
@@ -178,13 +257,16 @@ CHECKS: dict[str, CheckDef] = {
     "no_tool_called": CheckDef(no_tool_called),
     "tool_arg_min": CheckDef(tool_arg_min),
     "tool_arg_equals": CheckDef(tool_arg_equals),
+    "tool_arg_covers": CheckDef(tool_arg_covers),
     "answer_matches": CheckDef(answer_matches),
     "answer_not_matches": CheckDef(answer_not_matches),
     "cited_ids_subset_of_tool_ids": CheckDef(cited_ids_subset_of_tool_ids),
-    "cited_ids_count": CheckDef(cited_ids_count),
+    "cited_ids_subset_of_opened_ids": CheckDef(cited_ids_subset_of_opened_ids),
+    "cited_ids_count": CheckDef(cited_ids_count, validate=_validate_count),
     "max_iterations": CheckDef(max_iterations),
     "max_tool_errors": CheckDef(max_tool_errors),
     "stop_reason_is": CheckDef(stop_reason_is),
+    "heuristic_answer_matches": CheckDef(heuristic_answer_matches, heuristic=True),
     "answer_signals_failure": CheckDef(answer_signals_failure, heuristic=True),
 }
 
@@ -215,6 +297,8 @@ def validate_check(name: str, params: Mapping[str, Any]) -> None:
                 re.compile(value)
             except re.error as exc:
                 raise CheckSpecError(f"{name}: invalid regex {value!r}: {exc}") from None
+    if definition.validate is not None:
+        definition.validate(params)
 
 
 def run_check(
@@ -248,6 +332,10 @@ def _required_params(fn: Callable[..., Verdict]) -> set[str]:
 def _type_ok(value: Any, hint: Any) -> bool:
     if hint is Any:
         return True
+    if isinstance(hint, types.UnionType):  # e.g. `int | None`
+        return any(_type_ok(value, member) for member in typing.get_args(hint))
+    if hint is type(None):
+        return value is None
     if hint is bool:
         return isinstance(value, bool)
     if hint is int:
@@ -255,6 +343,17 @@ def _type_ok(value: Any, hint: Any) -> bool:
     if hint is float:  # an int is fine where a float is expected
         return isinstance(value, int | float) and not isinstance(value, bool)
     return isinstance(value, hint)
+
+
+def _normalize_arg(value: Any) -> Any:
+    """Strings: stripped, trailing arXiv version removed. Other values: hashable as is."""
+    if isinstance(value, str):
+        return re.sub(r"v\d+$", "", value.strip())
+    try:
+        hash(value)
+    except TypeError:
+        return repr(value)  # a dict/list argument: compared by its text
+    return value
 
 
 def _as_number(value: Any) -> float | None:

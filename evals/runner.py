@@ -41,6 +41,7 @@ from local_research_agent.tools import ToolRegistry, build_registry
 from .arxiv_fake import CaseArxivTransport
 from .checks import run_check
 from .mcp_factory import CASE_FILE_ENV, MISSES_FILE_ENV, read_misses, write_case_file
+from .provenance import SchemaRecorder
 from .records import RunRecord, RunTrace, ToolCallTrace
 from .suite import EVALS_DIR, FIXTURES_DIR, Case
 
@@ -78,6 +79,8 @@ class EvalConfig:
             raise ValueError(f"tool_backend must be one of {TOOL_BACKENDS}")
         if self.repetitions < 1:
             raise ValueError("repetitions must be >= 1")
+        if not self.temperature >= 0:  # also rejects NaN
+            raise ValueError(f"temperature must be >= 0, got {self.temperature}")
         if not LABEL_RE.fullmatch(self.label):
             # The label becomes a file name (evals/results/<label>.md).
             raise ValueError(f"label {self.label!r} must match {LABEL_RE.pattern}")
@@ -150,10 +153,12 @@ def run_case(
         "seed": config.seed_for(repetition),
         "expected_stop_reason": case.expected_stop_reason,
         "tool_backend": config.tool_backend,
+        "synthetic": case.synthetic,
     }
     run = _run_mcp if config.tool_backend == "mcp" else _run_local
+    recorder = SchemaRecorder(llm)  # sees exactly the `tools` the agent sends
     try:
-        outcome = run(case, config, repetition, llm, fixtures_dir)
+        outcome = run(case, config, repetition, recorder, fixtures_dir)
         trace = trace_from_result(case.question, outcome.result)
         checks = tuple(
             run_check(spec.name, spec.params, trace, heuristic=spec.heuristic)
@@ -166,6 +171,7 @@ def run_case(
             trace=empty,
             wall_time_ms=_ms_since(start),
             harness_error=f"{type(exc).__name__}: {exc}",
+            tool_schemas_sha256=recorder.sha256,
         )
 
     result, metrics = outcome.result, outcome.result.metrics
@@ -182,6 +188,9 @@ def run_case(
         fixture_misses=outcome.fixture_misses,
         checks=checks,
         mcp_startup_ms=outcome.mcp_startup_ms,
+        llm_prompt_tokens=tuple(call.prompt_tokens for call in result.state.llm_calls),
+        e2e_wall_time_ms=outcome.e2e_wall_time_ms,
+        tool_schemas_sha256=recorder.sha256,
     )
 
 
@@ -193,16 +202,18 @@ class McpHarnessError(RuntimeError):
 class _Outcome:
     result: AgentResult
     fixture_misses: tuple[str, ...]
+    e2e_wall_time_ms: float
     mcp_startup_ms: float | None = None
 
 
 def _run_local(
     case: Case, config: EvalConfig, repetition: int, llm: LLMClient, fixtures_dir: Path
 ) -> _Outcome:
+    start = time.perf_counter()
     transport = CaseArxivTransport(case.arxiv, fixtures_dir)
     registry = build_registry(arxiv_transport=transport, clock=lambda: case.frozen_now)
     result = run_agent(llm, registry, config.agent_config(repetition), case.question)
-    return _Outcome(result, tuple(transport.misses))
+    return _Outcome(result, tuple(transport.misses), _ms_since(start))
 
 
 def _run_mcp(
@@ -233,18 +244,22 @@ def _run_mcp(
         )
         bridge = McpClientBridge(params)
         try:
+            # End to end = what a user of `--tools mcp` waits for one answer: server spawn +
+            # handshake + the agent run. The shutdown (after the answer) is not included.
+            start = time.perf_counter()
             bridge.start(MCP_STARTUP_TIMEOUT_S)
             provider = McpToolProvider(
                 bridge, call_timeout_s=call_timeout_for(config.limits.tool_timeout_s)
             )
             registry = ToolRegistry(providers=[provider])
             result = run_agent(llm, registry, config.agent_config(repetition), case.question)
+            e2e_ms = _ms_since(start)
             if bridge.broken is not None:
                 raise McpHarnessError(bridge.broken)
             startup_ms = bridge.startup_ms
         finally:
             bridge.close()  # terminates the server before the temp dir is removed
-        return _Outcome(result, read_misses(misses_file), startup_ms)
+        return _Outcome(result, read_misses(misses_file), e2e_ms, startup_ms)
 
 
 def run_batch(

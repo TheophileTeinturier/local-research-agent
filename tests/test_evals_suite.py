@@ -1,6 +1,7 @@
 """The case loader: valid suites load with defaults; invalid ones fail with a precise message."""
 
 import datetime
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -10,10 +11,12 @@ import pytest
 from evals.suite import (
     CASES_DIR,
     DEFAULT_FROZEN_NOW,
+    MANIFEST_FILE,
     SuiteError,
     load_suite,
     resolve_suite_path,
     select_cases,
+    suite_hashes,
 )
 from fakes import make_eval_fixtures
 
@@ -146,9 +149,74 @@ def test_resolve_suite_path() -> None:
     assert resolve_suite_path("some/dir/x.json") == Path("some/dir/x.json")
 
 
+def test_suite_hash_covers_the_cases_file_and_the_fixtures_manifest(tmp_path: Path) -> None:
+    fixtures = make_eval_fixtures(tmp_path / "fixtures")
+    manifest = fixtures / MANIFEST_FILE
+    manifest.write_text('{"files": []}', encoding="utf-8")
+    suite = write_suite(tmp_path, case())
+    first = suite_hashes(suite, fixtures_dir=fixtures)
+    assert set(first) == {"suite_sha256", "cases_sha256", "fixtures_manifest_sha256"}
+    assert first["cases_sha256"] == hashlib.sha256(suite.read_bytes()).hexdigest()
+    assert suite_hashes(suite, fixtures_dir=fixtures) == first  # deterministic
+
+    manifest.write_text('{"files": ["new.xml"]}', encoding="utf-8")  # re-recorded fixtures
+    second = suite_hashes(suite, fixtures_dir=fixtures)
+    assert second["cases_sha256"] == first["cases_sha256"]
+    assert second["suite_sha256"] != first["suite_sha256"]
+
+    write_suite(tmp_path, case(question="What is 13% of 2450?"))  # edited case
+    third = suite_hashes(suite, fixtures_dir=fixtures)
+    assert third["fixtures_manifest_sha256"] == second["fixtures_manifest_sha256"]
+    assert third["suite_sha256"] != second["suite_sha256"]
+
+    manifest.unlink()
+    assert suite_hashes(suite, fixtures_dir=fixtures)["fixtures_manifest_sha256"] == "missing"
+
+
+ORIGINAL_IDS = [
+    "calc_basic",
+    "calc_big",
+    "date_diff_multistep",
+    "no_tool_general",
+    "details_known_id",
+    "research_synthesis",
+    "unknown_id_wellformed",
+    "arxiv_down",
+    "empty_results",
+    "out_of_scope",
+]
+
+
+def test_synthetic_defaults_to_false(tmp_path: Path, fixtures: Path) -> None:
+    path = write_suite(tmp_path, case(), case(id="s", synthetic=True))
+    suite = load_suite(path, fixtures_dir=fixtures)
+    assert [c.synthetic for c in suite.cases] == [False, True]
+
+
 def test_the_shipped_minimal_suite_is_valid() -> None:
-    suite = load_suite(resolve_suite_path("minimal"))  # real fixtures dir
-    assert len(suite.cases) == 10
+    suite = load_suite(resolve_suite_path("minimal"))  # real fixtures dir: every file exists
+    assert len(suite.cases) == 18
+    ids = [c.id for c in suite.cases]
+    assert ids[:10] == ORIGINAL_IDS  # the original cases keep their ids and their order
+    assert ids[10:] == [
+        "date_today",
+        "research_synthesis_para",
+        "compare_two_papers",
+        "list_recent_topic",
+        "find_by_title",
+        "invalid_id_format",
+        "ambiguous_no_context",
+        "injection_in_abstract",
+    ]
+    by_id = {c.id: c for c in suite.cases}
+    assert "cited_ids_subset_of_opened_ids" in {s.name for s in by_id["research_synthesis"].checks}
+    assert [c.id for c in suite.cases if c.synthetic] == ["injection_in_abstract"]
+    assert by_id["injection_in_abstract"].arxiv.papers == {
+        "2601.00001": "synthetic/paper_2601.00001.xml"
+    }
+    # The paraphrase is judged exactly like the original (both have the opened-ids check).
+    original = [s.name for s in by_id["research_synthesis"].checks]
+    assert [s.name for s in by_id["research_synthesis_para"].checks] == original
     unknown_id = next(c for c in suite.cases if c.id == "unknown_id_wellformed")
     assert unknown_id.arxiv.default_search == "empty"  # a fallback search is not a miss
     assert {c.category for c in suite.cases} == {

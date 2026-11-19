@@ -21,6 +21,54 @@
       "file": "search_no_results.xml",
       "description": "copy of tests/fixtures/arxiv (search 'qwxzvkjhq zzqplmnb')",
       "request": null
+    },
+    {
+      "file": "paper_1609.02907.xml",
+      "description": "lookup 1609.02907",
+      "request": "id_list=1609.02907&max_results=1",
+      "captured_at": "2026-11-18T10:46:25+00:00"
+    },
+    {
+      "file": "search_diffusion_molecules_10.xml",
+      "description": "search 'diffusion models molecule generation', sort=date, 10",
+      "request": "max_results=10&search_query=all%3Adiffusion+AND+all%3Amodels+AND+all%3Amolecule+AND+all%3Ageneration&sortBy=submittedDate&sortOrder=descending&start=0",
+      "captured_at": "2026-11-18T10:46:28+00:00",
+      "hits": [
+        "2611.19072",
+        "2611.17650",
+        "2611.12107",
+        "2611.09142",
+        "2611.08788",
+        "2611.06457",
+        "2611.05207",
+        "2610.37994",
+        "2610.27286",
+        "2610.23265"
+      ]
+    },
+    {
+      "file": "search_title_graphsage.xml",
+      "description": "search title words 'Inductive Representation Learning on Large Graphs', sort=relevance, 10",
+      "request": "max_results=10&search_query=all%3Ainductive+AND+all%3Arepresentation+AND+all%3Alearning+AND+all%3Alarge+AND+all%3Agraphs&sortBy=relevance&sortOrder=descending&start=0",
+      "captured_at": "2026-11-18T10:46:31+00:00",
+      "hits": [
+        "1710.09471",
+        "1707.03815",
+        "2307.15967",
+        "1706.02216",
+        "2009.05266",
+        "2408.15619",
+        "2002.11501",
+        "1907.04931",
+        "2006.04131",
+        "2107.09422"
+      ]
+    },
+    {
+      "file": "synthetic/paper_2601.00001.xml",
+      "description": "HAND-WRITTEN lookup 2601.00001 (fictional paper, prompt injection in the abstract); not recorded from arXiv",
+      "request": null,
+      "synthetic": true
     }
   ],
   "search_hits": [

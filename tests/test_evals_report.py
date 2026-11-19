@@ -203,6 +203,197 @@ def test_compare_mode() -> None:
     assert "| LLM latency (ms) | 2000 | 500 |" in text
 
 
+def with_calls(record: RunRecord, *calls: tuple[str, str]) -> RunRecord:
+    traced = tuple(ToolCallTrace(1, name, args, True, "ok") for name, args in calls)
+    return replace(record, trace=replace(record.trace, tool_calls=traced))
+
+
+def test_distinct_trajectories_per_case() -> None:
+    search3, search10 = ("search_arxiv", '{"max_results":3}'), ("search_arxiv", '{"max_results":10}')
+    opened = ("get_paper_details", '{"arxiv_id":"2606.01781"}')
+    runs = [
+        with_calls(rec("research", "multi_step", repetition=0), search3, opened),
+        with_calls(rec("research", "multi_step", repetition=1), search3, opened),
+        with_calls(rec("research", "multi_step", repetition=2), search10, opened),
+        with_calls(rec("research", "multi_step", repetition=3), opened, search3),  # order counts
+        with_calls(rec("research", "multi_step", error=True), search10),  # harness error: ignored
+        rec("calc_basic", "single_tool", repetition=0),
+        rec("calc_basic", "single_tool", repetition=1),
+    ]
+    summary = summarize(batch("b"), runs)
+    research, calc = summary.cases
+    assert (research.distinct_trajectories, research.trajectory_runs) == (3, 4)
+    assert (calc.distinct_trajectories, calc.trajectory_runs) == (1, 2)  # no tool, twice
+    text = render_report(summary)
+    assert "| distinct trajectories |" in text
+    assert text.count("| 3 of 4 runs |") == 1 and "| 1 of 2 runs |" in text
+
+
+def test_peak_prompt_median_per_case_in_the_report() -> None:
+    runs = [
+        replace(rec("calc_basic", "single_tool", repetition=r), llm_prompt_tokens=tokens)
+        for r, tokens in enumerate([(900, 1200), (900, 1500), (800, 1300)])
+    ]
+    summary = summarize(batch("b"), runs)
+    assert summary.cases[0].medians["peak_prompt_tokens"] == 1300.0
+    assert "| 1300 | 1 of 3 runs |" in render_report(summary)
+    # Older runs without per-call tokens: the column shows "-".
+    assert "| - | 1 of 3 runs |" in render_report(summarize(batch("b"), RUNS[:3]))
+
+
+SUITE_V2 = {"suite_sha256": "a" * 64, "cases_sha256": "c" * 64, "fixtures_manifest_sha256": "m" * 64}
+
+
+@pytest.mark.parametrize(
+    ("config_a", "config_b", "expected"),
+    [
+        (SUITE_V2, SUITE_V2, None),
+        (SUITE_V2, {}, "suite hash unknown for b"),
+        (
+            SUITE_V2,
+            {**SUITE_V2, "suite_sha256": "b" * 64, "fixtures_manifest_sha256": "n" * 64},
+            "different suite hashes (aaaaaaaaaaaa vs bbbbbbbbbbbb): the fixtures manifest differs",
+        ),
+        (
+            SUITE_V2,
+            {**SUITE_V2, "suite_sha256": "b" * 64, "cases_sha256": "d" * 64},
+            "the cases file differs",
+        ),
+        (
+            SUITE_V2,
+            {"suite_sha256": "b" * 64, "cases_sha256": "d" * 64, "fixtures_manifest_sha256": "n"},
+            "the cases file and the fixtures manifest differ",
+        ),
+        (  # recorded when suite_sha256 covered the cases file only
+            SUITE_V2,
+            {"suite_sha256": "b" * 64},
+            "b predates the fixtures-manifest hash",
+        ),
+    ],
+)
+def test_suite_mismatch(
+    config_a: dict[str, object], config_b: dict[str, object], expected: str | None
+) -> None:
+    warning = report.suite_mismatch(batch("a", **config_a), batch("b", 2, **config_b))
+    if expected is None:
+        assert warning is None
+    else:
+        assert warning is not None and expected in warning
+
+
+IDENTITY = {
+    **SUITE_V2,
+    "tool_schemas_sha256": "t" * 64,
+    "system_prompt_sha256": "p" * 64,
+    "ollama_version": "0.40.14",
+    "model_digest": "sha256:" + "d" * 64,
+    "temperature": 0.2,
+}
+
+
+def ident_batch(label: str, batch_id: int, git: str = "abc1234", **config: object) -> Batch:
+    return replace(batch(label, batch_id, **{**IDENTITY, **config}), git_commit=git)
+
+
+def warnings_of(a: Batch, b: Batch, vary: list[str] | None = None) -> tuple[str, ...]:
+    return report.compare_batches(a, b, vary=vary).warnings
+
+
+def test_compare_warns_loudly_on_different_suites() -> None:
+    a = summarize(ident_batch("a", 1), RUNS)
+    b_config = {"suite_sha256": "b" * 64, "cases_sha256": "d" * 64, "temperature": 0.7}
+    b = summarize(ident_batch("b", 2, **b_config), RUNS)
+    text = render_comparison(a, b)
+    assert text.splitlines()[2].startswith("> **WARNING: these batches differ")
+    assert "> - **different suite hashes (aaaaaaaaaaaa vs bbbbbbbbbbbb)" in text
+    assert "> Intentionally varied: `temperature` (inferred" in text
+    assert "temperature 0.2" in text and "temperature 0.7" in text
+    assert "| temperature | 0.2 | 0.7 |" in text  # also in the configuration differences
+    same = render_comparison(a, summarize(ident_batch("c", 3, temperature=0.9), RUNS))
+    assert "WARNING" not in same and "Intentionally varied: `temperature`" in same
+
+
+def test_identical_batches_have_no_warning_and_git_is_only_shown() -> None:
+    check = report.compare_batches(ident_batch("a", 1), ident_batch("b", 2, git="def5678"))
+    assert check.warnings == () and check.varied == () and check.varied_source == "none"
+    assert check.expected == ("git commit: abc1234 (a) vs def5678 (b)",)
+
+
+@pytest.mark.parametrize(
+    ("key", "name"),
+    [
+        ("tool_schemas_sha256", "tool schemas differs"),
+        ("system_prompt_sha256", "system prompt differs"),
+        ("ollama_version", "Ollama version differs"),
+        ("model_digest", "model digest differs"),
+    ],
+)
+def test_every_identity_difference_warns(key: str, name: str) -> None:
+    other = ident_batch("b", 2, **{key: "something-else"})
+    [warning] = warnings_of(ident_batch("a", 1), other, vary=["tool_backend"])
+    assert warning.startswith(name)
+
+
+def test_unknown_identity_values_warn() -> None:
+    old = ident_batch("old", 2, ollama_version=None, model_digest=None)
+    found = warnings_of(ident_batch("a", 1), old)
+    assert "Ollama version unknown for old: cannot tell whether they match" in found
+    assert "model digest unknown for old: cannot tell whether they match" in found
+
+
+def test_settings_beyond_the_varied_key_warn() -> None:
+    b = ident_batch("b", 2, temperature=0.7, num_ctx=4096)
+    found = warnings_of(ident_batch("a", 1, num_ctx=8192), b)  # two settings: nothing inferred
+    assert "config `temperature` differs: 0.2 (a) vs 0.7 (b)" in found
+    assert "config `num_ctx` differs: 8192 (a) vs 4096 (b)" in found
+    only_num_ctx = warnings_of(ident_batch("a", 1, num_ctx=8192), b, vary=["temperature"])
+    assert only_num_ctx == ("config `num_ctx` differs: 8192 (a) vs 4096 (b)",)
+
+
+def test_a_varied_prompt_variant_makes_the_prompt_hash_expected() -> None:
+    a = ident_batch("a", 1, prompt_variant="baseline")
+    b = ident_batch("b", 2, prompt_variant="research_workflow", system_prompt_sha256="q" * 64)
+    check = report.compare_batches(a, b)
+    assert check.varied == ("prompt_variant",) and check.warnings == ()
+    assert any(e.startswith("system prompt differs") for e in check.expected)
+    # Varying something else: the same prompt difference warns.
+    assert any("system prompt differs" in w for w in warnings_of(a, b, vary=["temperature"]))
+
+
+def test_dirty_trees_warn_in_compare_mode_and_in_the_header() -> None:
+    dirty = ident_batch("d", 2, git="abc1234+dirty")
+    found = warnings_of(ident_batch("a", 1), dirty)
+    message = "d ran on uncommitted changes (git abc1234+dirty): its code is not exactly any commit"
+    assert found == (message,)
+    header = render_report(summarize(dirty, RUNS))
+    assert "> **WARNING: uncommitted changes.**" in header.split("## Results")[0]
+    clean = render_report(summarize(ident_batch("a", 1), RUNS))
+    assert "uncommitted" not in clean
+
+
+def test_header_shows_ollama_digest_and_schema_hash_or_unknown() -> None:
+    text = render_report(summarize(ident_batch("a", 1), RUNS))
+    digest, schemas = "sha256:" + "d" * 64, "t" * 64
+    assert f"- Ollama 0.40.14, model digest {digest}, tool schemas sha256 {schemas}" in text
+    unknown = render_report(summarize(batch("b"), RUNS))  # nothing recorded
+    assert "- Ollama unknown, model digest unknown, tool schemas sha256 unknown" in unknown
+
+
+def test_single_report_shows_temperature_and_suite_hash() -> None:
+    text = render_report(summarize(batch("b", **SUITE_V2, temperature=0.7), RUNS))
+    assert "temperature 0.7" in text and "(sha256 aaaaaaaaaaaa)" in text
+
+
+def test_synthetic_cases_are_tagged_in_the_by_case_table() -> None:
+    runs = [
+        replace(rec("injection_in_abstract", "edge"), synthetic=True),
+        rec("calc_basic", "single_tool"),
+    ]
+    text = render_report(summarize(batch("b"), runs))
+    assert "| injection_in_abstract `synthetic` | edge | 1/1 |" in text
+    assert "| calc_basic | single_tool | 1/1 |" in text
+
+
 def test_cli_writes_the_report(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     db = tmp_path / "evals.sqlite"
     with ResultStore(db) as store:
@@ -218,6 +409,8 @@ def test_cli_writes_the_report(tmp_path: Path, capsys: pytest.CaptureFixture[str
     args = ["--label", "a", "--compare", "b", "--db", str(db), "--out-dir", str(tmp_path)]
     assert report.main(args) == 0
     assert "| calc_basic | 2/3 | 2/3 | +0 |" in (tmp_path / "a_vs_b.md").read_text("utf-8")
+    # Neither batch recorded a suite hash: the warning also goes to stderr.
+    assert "WARNING: suite hash unknown for a, b" in capsys.readouterr().err
 
     assert report.main(["--label", "zzz", "--db", str(db), "--out-dir", str(tmp_path)]) == 2
     assert "No batch labelled 'zzz'" in capsys.readouterr().out

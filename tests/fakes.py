@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import subprocess
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -91,6 +92,25 @@ def tool_call_response(*calls: tuple[str, dict[str, Any] | str]) -> LLMResponse:
         tool_calls=tool_calls,
         metrics=LLMMetrics(prompt_eval_count=20, eval_count=8, total_duration_ns=2_000_000),
     )
+
+
+def git(repo: Path, *args: str) -> None:
+    """Run git in `repo`. Identity and signing are set per command, so a test never depends
+    on the user's global git config (a signing key would make a commit fail or prompt)."""
+    config = ["-c", "user.name=test", "-c", "user.email=test@example.invalid"]
+    config += ["-c", "commit.gpgsign=false"]
+    subprocess.run(["git", *config, *args], cwd=repo, check=True, capture_output=True)
+
+
+def make_git_repo(path: Path) -> Path:
+    """A committed repo: `tracked.txt`, and a .gitignore covering `ignored.txt`. Clean."""
+    path.mkdir(parents=True)
+    git(path, "init", "-q")
+    (path / ".gitignore").write_text("ignored.txt\n", encoding="utf-8")
+    (path / "tracked.txt").write_text("v1\n", encoding="utf-8")
+    git(path, "add", ".")
+    git(path, "commit", "-q", "-m", "initial")
+    return path
 
 
 def make_eval_fixtures(directory: Path) -> Path:

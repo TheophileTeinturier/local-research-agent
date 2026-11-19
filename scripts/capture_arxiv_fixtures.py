@@ -4,6 +4,7 @@ Run manually, never from the tests (it uses the network):
 
     uv run python scripts/capture_arxiv_fixtures.py [output_dir]          # tests/fixtures/arxiv
     uv run python scripts/capture_arxiv_fixtures.py --evals [output_dir]  # evals/fixtures/arxiv
+    uv run python scripts/capture_arxiv_fixtures.py --evals-add           # new cases only
 
 The requests are built by the same code as the tools (`SearchQuery.params`, `lookup_params`)
 and sent through `ArxivClient.fetch_text`, so the 3 s rate limit applies. No custom
@@ -17,6 +18,14 @@ replays them. The paper looked up in scenario 3 is the first hit of scenario 1, 
 `evals/cases/minimal.json`, served by rule by `evals/arxiv_fake.py`, plus `MANIFEST.json`
 (what each file is and the exact request). The zero-hit search is copied from
 tests/fixtures/arxiv (no request): a real "no match" response serves any empty-results case.
+Re-running `--evals` re-records the files the 10 original cases use (new papers appear in the
+date-sorted search), so their past batches would no longer be comparable: avoid it.
+
+`--evals-add` mode (at most 3 requests; nothing existing is re-recorded): the lookup of
+1609.02907 (1706.02216 is already on disk and is skipped), a 10-result date-sorted search on
+diffusion models for molecule generation, and a search by the exact title of GraphSAGE
+(checks that 1706.02216 is among the results, prints its rank, warns beyond rank 5). Merges
+the new entries, plus the hand-written `synthetic/` fixture, into `MANIFEST.json`.
 """
 
 from __future__ import annotations
@@ -152,6 +161,97 @@ def capture_evals(out: Path) -> int:
     return 1 if problems else 0
 
 
+# --evals-add: the fixtures of the 8 cases added in the 18-case suite. Recorded WITHOUT
+# re-recording the existing ones, so the 10 original cases keep serving exactly the same data.
+ADD_LOOKUP_IDS = ("1609.02907", "1706.02216")  # GCN (Kipf & Welling), GraphSAGE
+ADD_DIFFUSION_KEYWORDS = "diffusion models molecule generation"
+ADD_TITLE = "Inductive Representation Learning on Large Graphs"
+ADD_TITLE_ID = "1706.02216"
+DEFAULT_MAX_RESULTS = 5  # the tool's default: a model that omits max_results sees 5 entries
+SYNTHETIC_FILES = (
+    {
+        "file": "synthetic/paper_2601.00001.xml",
+        "description": "HAND-WRITTEN lookup 2601.00001 (fictional paper, prompt injection "
+        "in the abstract); not recorded from arXiv",
+        "request": None,
+        "synthetic": True,
+    },
+)
+
+
+def capture_evals_add(out: Path) -> int:
+    """At most 3 requests (a lookup already on disk is skipped); merges MANIFEST.json."""
+    diffusion = SearchQuery.build(ADD_DIFFUSION_KEYWORDS, None, EVAL_SEARCH_RESULTS, "date")
+    # Unquoted: the tool drops stopwords even inside quotes, so the quoted title would become
+    # the phrase "inductive representation learning large graphs" (no "on"), which may not
+    # match. Plain keywords (5 terms ANDed) are also what a model typically sends.
+    title = SearchQuery.build(ADD_TITLE, None, EVAL_SEARCH_RESULTS, "relevance")
+    problems: list[str] = []
+    entries: list[dict[str, object]] = []
+
+    with capture_http() as http, capture_client(http) as client:
+        for arxiv_id in ADD_LOOKUP_IDS:
+            name, params = f"paper_{arxiv_id}", lookup_params(parse_arxiv_id(arxiv_id))
+            if (out / f"{name}.xml").is_file():
+                print(f"{name}: already recorded, not re-requested")
+                continue
+            found = [p.arxiv_id for p in parse_feed(capture(client, out, name, params)).papers]
+            if found != [arxiv_id]:
+                problems.append(f"lookup {arxiv_id} returned {found}")
+            entries.append(_entry(f"{name}.xml", f"lookup {arxiv_id}", params))
+
+        name = "search_diffusion_molecules_10"
+        papers = parse_feed(capture(client, out, name, diffusion.params())).papers
+        if len(papers) != EVAL_SEARCH_RESULTS:
+            problems.append(f"diffusion search returned {len(papers)}, wanted 10")
+        description = f"search {ADD_DIFFUSION_KEYWORDS!r}, sort=date, 10"
+        entries.append(_entry(f"{name}.xml", description, diffusion.params(), papers))
+
+        name = "search_title_graphsage"
+        papers = parse_feed(capture(client, out, name, title.params())).papers
+        ids = [p.arxiv_id for p in papers]
+        if ADD_TITLE_ID not in ids:
+            problems.append(f"title search: {ADD_TITLE_ID} not among the results {ids}")
+        else:
+            rank = ids.index(ADD_TITLE_ID) + 1
+            first_author = papers[rank - 1].authors[0] if papers[rank - 1].authors else "?"
+            print(f"title search: {ADD_TITLE_ID} is result {rank}/{len(ids)} ({first_author})")
+            if rank > DEFAULT_MAX_RESULTS:
+                problems.append(
+                    f"title search: {ADD_TITLE_ID} is result {rank}, beyond the tool's default "
+                    f"{DEFAULT_MAX_RESULTS}: a model omitting max_results would not see it"
+                )
+        description = f"search title words {ADD_TITLE!r}, sort=relevance, 10"
+        entries.append(_entry(f"{name}.xml", description, title.params(), papers))
+
+    _merge_manifest(out / "MANIFEST.json", [*entries, *SYNTHETIC_FILES])
+    for problem in problems:
+        print(f"WARNING: {problem}")
+    return 1 if problems else 0
+
+
+def _entry(
+    file: str, description: str, params: dict[str, str], papers: list | None = None
+) -> dict[str, object]:
+    entry: dict[str, object] = {
+        "file": file,
+        "description": description,
+        "request": request_key(params),
+        "captured_at": _now(),
+    }
+    if papers is not None:
+        entry["hits"] = [p.arxiv_id for p in papers]
+    return entry
+
+
+def _merge_manifest(path: Path, entries: list[dict[str, object]]) -> None:
+    """Add or replace `entries` by file name; every other entry is kept as it is."""
+    manifest = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"files": []}
+    new = {e["file"] for e in entries}
+    manifest["files"] = [e for e in manifest["files"] if e["file"] not in new] + entries
+    _write_json(path, manifest)
+
+
 def _now() -> str:
     return datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds")
 
@@ -163,12 +263,20 @@ def _write_json(path: Path, data: object) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--evals", action="store_true", help="record the evaluation fixtures")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--evals", action="store_true", help="(re-)record the evaluation fixtures")
+    mode.add_argument(
+        "--evals-add",
+        action="store_true",
+        help="record only the fixtures of the cases added in the 18-case suite",
+    )
     parser.add_argument("output_dir", nargs="?", type=Path)
     args = parser.parse_args()
-    out = args.output_dir or (EVALS_DIR if args.evals else TESTS_DIR)
+    out = args.output_dir or (EVALS_DIR if args.evals or args.evals_add else TESTS_DIR)
     out.mkdir(parents=True, exist_ok=True)
     try:
+        if args.evals_add:
+            return capture_evals_add(out)
         return capture_evals(out) if args.evals else capture_tests(out)
     except ArxivError as exc:
         # Files written before the failure are kept; re-run once arXiv answers.

@@ -177,6 +177,20 @@ class ResultStore:
             )
         return _rowid(cursor)
 
+    def update_batch_config(self, batch_id: int, updates: dict[str, Any]) -> None:
+        """Merge `updates` into a batch's config (for values only known once runs exist)."""
+        with self._db:
+            row = self._db.execute(
+                "SELECT config_json FROM batches WHERE id = ?", (batch_id,)
+            ).fetchone()
+            if row is None:
+                raise StoreError(f"no batch with id {batch_id}")
+            config = {**json.loads(row["config_json"]), **updates}
+            self._db.execute(
+                "UPDATE batches SET config_json = ? WHERE id = ?",
+                (json.dumps(config, sort_keys=True, default=str), batch_id),
+            )
+
     def save_run(self, batch_id: int, record: RunRecord) -> int:
         """Insert one run and its check results in a single transaction; return the run id."""
         trace = record.trace
@@ -310,6 +324,11 @@ def _record(row: sqlite3.Row, checks: tuple[CheckResult, ...]) -> RunRecord:
         checks=checks,
         tool_backend=row["tool_backend"],
         mcp_startup_ms=row["mcp_startup_ms"],
+        # Added to trace_json later: absent in older rows (no schema change needed).
+        llm_prompt_tokens=tuple(extra.get("llm_prompt_tokens", ())),
+        e2e_wall_time_ms=extra.get("e2e_wall_time_ms"),
+        synthetic=bool(extra.get("synthetic", False)),
+        tool_schemas_sha256=extra.get("tool_schemas_sha256"),
     )
 
 

@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/AzEkq/UDQpbw2EFofekKEeL5+vE</id>
+  <title>arXiv Query: search_query=all:diffusion AND all:models AND all:molecule AND all:generation&amp;id_list=&amp;start=0&amp;max_results=10</title>
+  <updated>2026-11-18T10:46:29Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:diffusion+AND+(all:models+AND+(all:molecule+AND+all:generation))&amp;start=0&amp;max_results=10&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>10</opensearch:itemsPerPage>
+  <opensearch:totalResults>574</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2611.19072v1</id>
+    <title>Nahual: A Sequence Model for Language and Atoms</title>
+    <updated>2026-11-14T01:22:49Z</updated>
+    <link href="https://arxiv.org/abs/2611.19072v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.19072v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Generative models play a rapidly growing role in the design and simulation of molecules. The most widely used applications of generative models are in large language models (LLMs), owing to the natural flexibility of language for specifying and answering queries. However, generalist LLMs do not effectively handle large sets of 3D coordinates, whereas specialist generative models of 3D molecules cannot reach the controllability afforded by language. To bridge these capabilities, we propose Nahual, a decoder-only autoregressive diffusion model for any sequence of text and 3D molecules. To enable expressive autoregression on continuous coordinates, we propose next-token diffusion, whereby a causal transformer denoises each token while attending to the clean tokens before it, without increasing context size. We train Nahual on a curated set of twelve 3D chemistry tasks ranging from microsolvation to molecular conformer search to adsorption on metal surfaces, with associated evaluation metrics and baselines. The result is a single set of end-to-end-trained weights that simultaneously performs all tasks and surpasses state-of-the-art models specialized for crystal structure prediction and property-conditional molecule generation. Our results demonstrate the viability of scaling generalist decoder-only models for native multimodal understanding and generation across language and chemistry. Code is available at https://github.com/the-matter-lab/nahual.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="physics.chem-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-14T01:22:49Z</published>
+    <arxiv:comment>NeurIPS 2026</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Austin H. Cheng</name>
+    </author>
+    <author>
+      <name>Marcel Müller</name>
+    </author>
+    <author>
+      <name>Andreas Burger</name>
+    </author>
+    <author>
+      <name>Yeonghun Kang</name>
+    </author>
+    <author>
+      <name>Tsz Wai Ko</name>
+    </author>
+    <author>
+      <name>Marta Skreta</name>
+    </author>
+    <author>
+      <name>Luka Mucko</name>
+    </author>
+    <author>
+      <name>Ella Miray Rajaonson</name>
+    </author>
+    <author>
+      <name>Cher Tian Ser</name>
+    </author>
+    <author>
+      <name>Jérôme F. Gonthier</name>
+    </author>
+    <author>
+      <name>Alex Zook</name>
+    </author>
+    <author>
+      <name>Varinia Bernales</name>
+    </author>
+    <author>
+      <name>Alán Aspuru-Guzik</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2611.17650v1</id>
+    <title>Classifier-Guided Latent Diffusion for Small-Molecule Generation</title>
+    <updated>2026-11-13T01:41:00Z</updated>
+    <link href="https://arxiv.org/abs/2611.17650v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.17650v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Diffusion models have emerged as a promising class of generative models for molecular design because of their ability to learn complex chemical distributions and support conditional or guided generation. In this work, we investigate a latent diffusion pipeline for property-guided small-molecule generation. The proposed framework represents canonicalized SMILES strings using a frozen ChemBERTa encoder, trains a Transformer-based decoder to reconstruct SELFIES strings from molecular latent embeddings, and learns an unconditional denoising diffusion model in the ChemBERTa latent space. To enable property-directed generation, a differentiable latent property predictor is used to guide the diffusion sampling process. Generated SELFIES strings are converted to SMILES, validated using RDKit, and evaluated using molecular validity, uniqueness, novelty, and predicted property scores. We study guidance toward two drug-relevant binary endpoints: blood--brain barrier permeability and inhibition of human $β$-secretase 1. The results suggest that latent diffusion over pretrained molecular embeddings can generate chemically valid and novel molecules while enabling controllable steering toward desired molecular properties.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-13T01:41:00Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Ali Forooghi</name>
+    </author>
+    <author>
+      <name>Luis Rueda</name>
+    </author>
+    <author>
+      <name>Alioune Ngom</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2611.12107v1</id>
+    <title>Geometry and Stochastic Analysis of Flow and Diffusion Models: A Survey</title>
+    <updated>2026-11-09T09:22:23Z</updated>
+    <link href="https://arxiv.org/abs/2611.12107v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.12107v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Flow-based and diffusion-based models have become the principal means of learning and sampling high-dimensional probability distributions, from images and video to proteins, molecules and physical fields, and increasingly language. Each carries a simple law to the law of the data along a curve of probability measures, and behind the variety of their names lie three geometries, those of the state space on which the data live, of the space of probability measures through which the curve passes, and of the space of paths traced by the generating process. A single analytic idea runs through the subject. Every score identity used to train a diffusion model is an integration by parts, on the noise, on the data or on Wiener space, and Malliavin calculus extends this to nonlinear and infinite-dimensional diffusions. We develop these foundations with full definitions and follow them through normalising flows, flow matching and few-step maps, diffusion models and their convergence theory, conditioning, Schrödinger bridges and stochastic control, and their extension to manifolds, Lie groups, discrete and function spaces and jump processes. We close with statistical physics, renormalisation and, more speculatively, holography, in which the radial direction of anti-de Sitter space can play the role of flow time. A table of the main methods and a collection of open problems complete the survey.</summary>
+    <category term="math.PR" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="math.DG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-09T09:22:23Z</published>
+    <arxiv:primary_category term="math.PR"/>
+    <author>
+      <name>Ehsan Mirafzali</name>
+    </author>
+    <author>
+      <name>Razvan Marinescu</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2611.09142v1</id>
+    <title>Learning Generative Dynamics for 3D Molecule Generation via Sequential Neuro-Symbolic Constraints</title>
+    <updated>2026-11-06T08:18:31Z</updated>
+    <link href="https://arxiv.org/abs/2611.09142v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.09142v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Diffusion models have recently emerged as a powerful paradigm for generating 3D molecules. Despite showing remarkable promise, they learn atomic distributions implicitly from data, without explicitly encoding physicochemical rules into their generative dynamics. Consequently, generated samples can be statistically plausible yet chemically invalid. To address this problem, we propose Sequential Neuro-Symbolic Constrained Diffusion (SensDiff), a framework that integrates symbolic rules into generative modeling, enabling the model to internalize scientific priors during training. Central to SensDiff is the observation that the diffusion trajectory of 3D molecule generation exhibits a coarse-to-fine evolution: valid molecules arise by first mitigating macroscopic geometric conflicts and then refining structures toward microscopic chemical consistency through iterative denoising. Accordingly, SensDiff mirrors this dynamic by sequentially enforcing constraints with adaptive weighting during training, progressively steering generation toward valid molecular geometries. Moreover, SensDiff translates domain knowledge into interpretable generative controls, grounding opaque neural denoising in scientific principles. Experiments on molecular benchmarks and real-world constrained generation tasks confirm that SensDiff consistently improves chemical validity while adhering to physicochemical rules and user-specified targets. The code is publicly available at https://github.com/WanyuGroup/NeurIPS2026_SensDiff.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-06T08:18:31Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Zhuoran Li</name>
+    </author>
+    <author>
+      <name>Xu Sun</name>
+    </author>
+    <author>
+      <name>Chang Wen Chen</name>
+    </author>
+    <author>
+      <name>Wanyu Lin</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2611.08788v1</id>
+    <title>Not All Latents Are Equal: Importance-Weighted Latent Graph Generation</title>
+    <updated>2026-11-05T23:23:16Z</updated>
+    <link href="https://arxiv.org/abs/2611.08788v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.08788v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Graph generation has shown tremendous effectiveness in modeling complex scientific tasks ranging from molecule generation to optimized circuit design. Most recent advancements have developed models that learn to denoise noisy graphs using either discrete diffusion or flow matching. However, discrete graph diffusion scales quadratically with the number of nodes, making it difficult to use such models on larger graphs. On the other hand, latent graph generation instead seeks to denoise noisy graph latents, which scale better to more nodes due to their lower dimension. However, in practice, latent graph generation models lag behind their discrete counterparts in performance. We study this problem, finding that it is caused by the unequal distribution of that different latent dimensions have on graph reconstruction. the impact. We observe that the vast majority of impact is contained in only a smaller number of latent dimensions. Since equal emphasis is placed on reconstructing the entire latent in the loss function, existing models are optimized to reconstruct information irrelevant to the downstream task. To tackle this problem, we propose Latent Importance Reweighting ({\bf LIR)} which weights each latent dimensions via it's importance to final graph reconstruction. Importance is calculated as the relative influence of a single latent unit on graph reconstruction, which is represented via the Jacobian of the decoder relative to the latent. Our method is model-agnostic and requires no additional model parameters or hyperparameters. Experiments show that LIR can boost performance and lead to faster training convergence when applied to two different autoencoders on various benchmark datasets. Code: https://github.com/biraaj/GraphGenLatentReweight</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-05T23:23:16Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Biraaj Rout</name>
+    </author>
+    <author>
+      <name>Jay Revolinsky</name>
+    </author>
+    <author>
+      <name>Han Liu</name>
+    </author>
+    <author>
+      <name>Harry Shomer</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2611.06457v1</id>
+    <title>Effective Harmonic and Anharmonic Models for Vibronic Spectra</title>
+    <updated>2026-11-04T12:56:14Z</updated>
+    <link href="https://arxiv.org/abs/2611.06457v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.06457v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Vibrationally resolved spectra of medium-sized molecules contain dense progressions, weak borrowed-intensity bands and large-amplitude structural motions. Their interpretation requires state-to-state assignments together with a complete spectral envelope, while a fully anharmonic treatment of every normal coordinate is usually impractical. We introduce a general workflow that builds both outputs from automatically generated nonredundant internal coordinates and a common transition-operator representation. The harmonic level combines time-independent (TI) assignments with time-dependent (TD) thermal correlations and an explicit omitted-strength bound for the positive harmonic dipole sum. A discrete-variable representation (DVR) promotes selected flexible coordinates while the remaining modes are contracted analytically. Perturbative and variational nuclear states extend the same operator treatment to separate-state modes with Duschinsky mixing or to shared modes with residual quadratic couplings. The workflow recovers approximately 99% of the harmonic intensity for strongly reorganized medium-sized examples, reproduces measured absorption and fluorescence trends for anthracene and p-terphenyl, and gives signed electronic circular dichroism (ECD) profiles for camphor. Water photoionization, a diffuse-basis two-photon response tensor for the pyrazine $n\to3s$ Rydberg band, and nonplanar 4-pyrone calculations test continuum and anharmonic extensions. The result is a unified route from molecular structure to resolved assignments and numerically converged finite-model spectra.</summary>
+    <category term="physics.chem-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-04T12:56:14Z</published>
+    <arxiv:comment>22 pages, 14 figures; 85 pages of Supporting Information appended. Standalone code: https://github.com/yogibubu/SATI-standalone</arxiv:comment>
+    <arxiv:primary_category term="physics.chem-ph"/>
+    <author>
+      <name>Vincenzo Barone</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2611.05207v1</id>
+    <title>Multi-Objective Generative Optimization via Expected Hypervolume Fine-Tuning</title>
+    <updated>2026-11-03T16:55:58Z</updated>
+    <link href="https://arxiv.org/abs/2611.05207v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.05207v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Scientific discovery requires plausible designs spanning useful trade-offs among competing properties: a molecule with strong binding affinity, for example, may be difficult to synthesize. Pretrained generative models, e.g., flow and diffusion generators, provide a foundation for proposing such designs, but steering them toward high-quality, complementary trade-offs remains challenging. Inference-time search incurs high per-sample costs, while fine-tuning typically relies on fixed per-candidate rewards that do not capture how designs complement one another. We introduce Hypervolume Fine-Tuning (HVFT), which adapts a single pretrained generator to maximize the expected hypervolume of its samples while controlling departure from the pretrained distribution. Expected hypervolume jointly rewards candidate quality and collective trade-off coverage. Nonetheless, we show that it cannot be expressed as the expectation of a fixed per-candidate reward and therefore cannot be optimized directly with standard techniques. A key observation of this work is that its first variation corresponds to the expected marginal hypervolume contribution of a candidate, which yields a tractable adaptive reward via an unbiased estimator based on model samples. HVFT uses this reward to decompose the objective into a sequence of KL-proximal scalar-reward subproblems. We establish concavity, relative smoothness, and convergence guarantees for the resulting distributional procedure. Across therapeutic-peptide and molecular design tasks spanning discrete diffusion and continuous flow-matching models, HVFT achieves state-of-the-art expected hypervolume and trade-off coverage.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-03T16:55:58Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Juan Guevara</name>
+    </author>
+    <author>
+      <name>Riccardo De Santi</name>
+    </author>
+    <author>
+      <name>Andreas Krause</name>
+    </author>
+    <author>
+      <name>Raul Astudillo</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.37994v1</id>
+    <title>Towards Generalizing Pretrained All-Atom Representations to Unified Binder Design</title>
+    <updated>2026-10-27T21:42:44Z</updated>
+    <link href="https://arxiv.org/abs/2610.37994v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.37994v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>PairFormer-based all-atom models demonstrate strong capabilities in biomolecular binder design. However, existing methods often use all-atom representations for modality-specific binder design, such as protein and peptide design. In contrast, recent geometric latent diffusion models pursue unified binder design by representing molecular blocks from different modalities in a shared latent space. These complementary strengths motivate us to investigate how to generalize the use of pretrained all-atom representations to unified binder design. We introduce PairFuse, a parameter-efficient method that enables this generalization through representation fusion. Specifically, we use lightweight layerwise adapters to integrate pretrained all-atom representations into an independently pretrained geometric latent diffusion model. Our adapters integrate pretrained all-atom representations through two mechanisms: enriching the diffusion model's molecular block features and incorporating pairwise structural information into the geometric diffusion model's denoiser. Theoretically, we prove that the augmented denoiser preserves geometry and pairwise attention fusion provides additional attention expressivity beyond feature-only fusion. Experimentally, across antibody, peptide, and small molecule binder-design benchmarks, PairFuse achieves stronger performance than the pretrained diffusion model and existing representation-fusion baselines.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-27T21:42:44Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Maojiang Su</name>
+    </author>
+    <author>
+      <name>Jiale Chen</name>
+    </author>
+    <author>
+      <name>Qijie Zhu</name>
+    </author>
+    <author>
+      <name>Shang Wu</name>
+    </author>
+    <author>
+      <name>Jiayi Wang</name>
+    </author>
+    <author>
+      <name>Jihai Zhao</name>
+    </author>
+    <author>
+      <name>Guo Ye</name>
+    </author>
+    <author>
+      <name>Yibo Wen</name>
+    </author>
+    <author>
+      <name>Han Liu</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.27286v1</id>
+    <title>Time-resolved Rydberg dynamics in molecules</title>
+    <updated>2026-10-19T20:58:45Z</updated>
+    <link href="https://arxiv.org/abs/2610.27286v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.27286v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>We develop a general theoretical framework for the ultrafast dynamics of coherently populated autoionizing Rydberg states in molecules, whose coherent decay results in asymmetric Fano line shapes produced by interference between resonant autoionization and direct ionization. The asymmetric line shapes form in the photoelectron continuum during the autoionization lifetime of the decreasing Rydberg population. By parameterizing autoionization resonances and solving the time-dependent Schrödinger equation, we model the buildup of the Fano profile together with the decline of the coherently excited Rydberg-state population. We compare our calculated photoelectron yields with the XUV-pump--IR-probe photoemission experiment of Biswas et al., Phys. Rev. A 110, 043106 (2024), in which neutral ground-state CO$_2$ molecules are excited by an XUV pulse to the Henning sharp and diffuse Rydberg series and subsequently ionized by the delayed IR pulse. Based on our numerically modeled photoelectron yields, we analyze two complementary processes: (i) photoemission into the $X^2Π_g$ continuum of residual CO$_2^+$ ions, which exposes interferences between direct photoionization and excited-state autoionization, and (ii) IR-induced photoemission into the CO$_2^+$[$B^2Σ_u^+$] continuum, which reveals quantum beats between Rydberg states. Our close-coupling model provides a versatile, extendable framework for tracking molecular Rydberg-state relaxation and, more generally, light-driven coherent dynamics in complex quantum systems.</summary>
+    <category term="physics.atom-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="physics.atm-clus" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-19T20:58:45Z</published>
+    <arxiv:primary_category term="physics.atom-ph"/>
+    <author>
+      <name>Erfan Saydanzad</name>
+    </author>
+    <author>
+      <name>Van-Hung Hoang</name>
+    </author>
+    <author>
+      <name>Uwe Thumm</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.23265v1</id>
+    <title>ADT: All-Atom Diffusion Tokenizer for 3D Molecular Structures</title>
+    <updated>2026-10-16T10:36:06Z</updated>
+    <link href="https://arxiv.org/abs/2610.23265v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.23265v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Discrete structural tokenization provides a promising route to autoregressive 3D molecular generation. Yet, existing tokenizers face a trade-off between compact representation and all-atom reconstruction: atom-level tokens preserve atomic details but produce long sequences, while compact residue-level protein tokens typically omit side-chain geometry. To overcome this limitation, we propose All-atom Diffusion Tokenizer (ADT), which decouples token granularity from reconstruction resolution. ADT uses one structural token per atom for small molecules and one token per protein residue that jointly represents backbone and side-chain geometry. To mitigate geometric distortion introduced by quantization, we leverage the generative capacity of diffusion models to recover fine-grained atomic geometry beyond deterministic decoding from discrete tokens. Extensive experiments across small molecules and proteins demonstrate that ADT achieves strong reconstruction from compact discrete representations while enabling high-quality autoregressive generation of both small molecules and all-atom protein structures. These results establish compact structural tokens as an effective discrete interface for all-atom molecular reconstruction and generation.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-16T10:36:06Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Xuantuo Huang</name>
+    </author>
+    <author>
+      <name>Encheng Su</name>
+    </author>
+    <author>
+      <name>Aoran Wang</name>
+    </author>
+    <author>
+      <name>Pan Tan</name>
+    </author>
+    <author>
+      <name>Shengyong Xu</name>
+    </author>
+    <author>
+      <name>Yizhou Wang</name>
+    </author>
+    <author>
+      <name>Chen Tang</name>
+    </author>
+    <author>
+      <name>Shixiang Tang</name>
+    </author>
+    <author>
+      <name>Mingxiao Li</name>
+    </author>
+  </entry>
+</feed>

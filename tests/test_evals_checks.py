@@ -14,13 +14,16 @@ from evals.checks import (
     answer_signals_failure,
     check_label,
     cited_ids_count,
+    cited_ids_subset_of_opened_ids,
     cited_ids_subset_of_tool_ids,
     extract_arxiv_ids,
+    heuristic_answer_matches,
     max_iterations,
     max_tool_errors,
     no_tool_called,
     run_check,
     stop_reason_is,
+    tool_arg_covers,
     tool_arg_equals,
     tool_arg_min,
     tool_called,
@@ -131,6 +134,42 @@ def test_tool_arg_equals() -> None:
     assert not passed and "arXiv:1706.02216" in detail
 
 
+COVERED = ["1609.02907", "1706.02216"]
+
+
+def test_tool_arg_covers_counts_ok_and_failed_calls_and_ignores_versions() -> None:
+    t = trace(
+        "",
+        details("1609.02907v4"),  # version stripped
+        details(" 1706.02216", ok=False),  # a failed call counts too (arXiv down, say)
+    )
+    passed, detail = tool_arg_covers(t, tool="get_paper_details", arg="arxiv_id", values=COVERED)
+    assert passed and "all of" in detail
+    # A value given with a version in the case is normalized as well.
+    assert tool_arg_covers(t, tool="get_paper_details", arg="arxiv_id", values=["1706.02216v1"])[0]
+
+
+def test_tool_arg_covers_fails_on_a_missing_value() -> None:
+    only_one = trace("", details("1609.02907"), call("search_arxiv", {"arxiv_id": "1706.02216"}))
+    passed, detail = tool_arg_covers(
+        only_one, tool="get_paper_details", arg="arxiv_id", values=COVERED
+    )
+    assert not passed and "missing ['1706.02216']" in detail
+    # A repetition warning is not a call; a prefixed id is another value.
+    for second in (details("1706.02216", repeated=True), details("arXiv:1706.02216")):
+        t = trace("", details("1609.02907"), second)
+        assert not tool_arg_covers(t, tool="get_paper_details", arg="arxiv_id", values=COVERED)[0]
+    no_calls = trace("")
+    assert not tool_arg_covers(no_calls, tool="get_paper_details", arg="arxiv_id", values=COVERED)[0]
+
+
+def test_tool_arg_covers_non_string_values() -> None:
+    t = trace("", call("search_arxiv", {"max_results": 5}), call("search_arxiv", {"x": {"a": 1}}))
+    assert tool_arg_covers(t, tool="search_arxiv", arg="max_results", values=[5])[0]
+    assert not tool_arg_covers(t, tool="search_arxiv", arg="max_results", values=[10])[0]
+    assert tool_arg_covers(t, tool="search_arxiv", arg="x", values=[{"a": 1}])[0]  # unhashable
+
+
 def test_raw_unparseable_arguments_are_empty() -> None:
     raw = ToolCallTrace(1, "search_arxiv", "not json", False, "Error: ...")
     assert raw.args() == {}
@@ -186,12 +225,88 @@ def test_ids_from_error_results_do_not_count_but_the_question_does() -> None:
     assert not cited_ids_subset_of_tool_ids(trace("2301.99999 exists", error, question="q"))[0]
 
 
+def details(arxiv_id: Any, *, ok: bool = True, repeated: bool = False) -> ToolCallTrace:
+    return call("get_paper_details", {"arxiv_id": arxiv_id}, ok=ok, repeated=repeated)
+
+
+def test_cited_ids_subset_of_opened_ids_passes_when_every_cited_id_was_opened() -> None:
+    t = trace(
+        "1. arXiv:2606.01781v2 2. 2605.07838",
+        call("search_arxiv", content=SEARCH_OUT),
+        details("2606.01781"),
+        details("arXiv:2605.07838v1"),  # the argument is normalized like the answer
+    )
+    passed, detail = cited_ids_subset_of_opened_ids(t)
+    assert passed and detail == "2 cited id(s), all opened"
+    assert cited_ids_subset_of_opened_ids(trace("No ids here."))[0]  # nothing cited
+
+
+def test_ids_seen_only_in_search_results_or_the_question_were_not_opened() -> None:
+    search = call("search_arxiv", content=SEARCH_OUT)
+    t = trace("See 2606.01781 and 2605.07838.", search, details("2606.01781"), question="q")
+    assert cited_ids_subset_of_tool_ids(t)[0]  # the looser check is satisfied...
+    passed, detail = cited_ids_subset_of_opened_ids(t)  # ...the strict one is not
+    assert not passed and detail.endswith("['2605.07838']")
+    in_question = trace("2406.99999 was not found.", question="Abstract of 2406.99999?")
+    assert not cited_ids_subset_of_opened_ids(in_question)[0]
+
+
+@pytest.mark.parametrize(
+    "opening",
+    [
+        details("2606.01781", ok=False),  # failed: not_found, arXiv down...
+        details("2606.01781", repeated=True),  # a repetition warning, not an execution
+        call("search_arxiv", {"arxiv_id": "2606.01781"}),  # another tool
+        details(2606.01781),  # not a string
+        call("get_paper_details", {"id": "2606.01781"}),  # another argument
+    ],
+)
+def test_calls_that_do_not_open_a_paper(opening: ToolCallTrace) -> None:
+    assert not cited_ids_subset_of_opened_ids(trace("See 2606.01781.", opening))[0]
+
+
+def test_a_repeat_of_a_successful_opening_still_counts() -> None:
+    t = trace("See 2606.01781.", details("2606.01781"), details("2606.01781", repeated=True))
+    assert cited_ids_subset_of_opened_ids(t)[0]
+
+
 def test_cited_ids_count() -> None:
     answer = "1. 2606.01781 2. arXiv:2605.07838 3. 2603.15047v2 (again 2606.01781)"
     assert cited_ids_count(trace(answer), exactly=3)[0]
     passed, detail = cited_ids_count(trace(answer), exactly=2)
     assert not passed and "3 distinct" in detail
     assert cited_ids_count(trace("No papers matched."), exactly=0)[0]
+
+
+@pytest.mark.parametrize(
+    ("n_ids", "bounds", "passed"),
+    [
+        (5, {"min": 5, "max": 10}, True),
+        (10, {"min": 5, "max": 10}, True),
+        (4, {"min": 5, "max": 10}, False),
+        (11, {"min": 5, "max": 10}, False),
+        (7, {"min": 5}, True),
+        (2, {"min": 5}, False),
+        (0, {"max": 2}, True),
+        (3, {"max": 2}, False),
+    ],
+)
+def test_cited_ids_count_bounds(n_ids: int, bounds: dict[str, int], passed: bool) -> None:
+    answer = " ".join(f"2601.{i:05d}" for i in range(1, n_ids + 1))
+    verdict, detail = cited_ids_count(trace(answer), **bounds)
+    assert verdict is passed and f"{n_ids} distinct" in detail
+    assert (">= 5" in detail) is ("min" in bounds)
+
+
+def test_heuristic_answer_matches_is_heuristic_and_reported_apart() -> None:
+    assert CHECKS["heuristic_answer_matches"].heuristic
+    assert heuristic_answer_matches(trace("Which topic do you mean?"), regex=r"(?i)\?")[0]
+    assert not heuristic_answer_matches(trace("Here are papers."), regex=r"\?")[0]
+    result = run_check("heuristic_answer_matches", {"regex": "x"}, trace("y"))
+    assert result.heuristic and not result.passed
+    # The original name still works, with the same verdicts and its own label.
+    legacy = run_check("answer_signals_failure", {"regex": "y"}, trace("y"))
+    assert legacy.heuristic and legacy.passed and legacy.name == "answer_signals_failure(regex=y)"
 
 
 # --- counters -------------------------------------------------------------------------------
@@ -225,6 +340,7 @@ def test_checks_are_pure() -> None:
     for name, params in [
         ("tool_arg_min", {"tool": "search_arxiv", "arg": "max_results", "value": 6}),
         ("cited_ids_subset_of_tool_ids", {}),
+        ("cited_ids_subset_of_opened_ids", {}),
         ("cited_ids_count", {"exactly": 1}),
     ]:
         assert run_check(name, params, t) == run_check(name, params, t)
@@ -241,6 +357,16 @@ def test_checks_are_pure() -> None:
         ("tool_called", {"tool": "x", "min": True}, "param 'min'=True is not"),
         ("answer_matches", {"regex": "("}, "invalid regex"),
         ("cited_ids_subset_of_tool_ids", {"include_question": "yes"}, "is not"),
+        ("cited_ids_subset_of_opened_ids", {"tool": "x"}, "unknown param(s) ['tool']"),
+        ("cited_ids_count", {}, "give `exactly`, or `min` and/or `max`"),
+        ("cited_ids_count", {"exactly": 3, "max": 4}, "cannot be combined"),
+        ("cited_ids_count", {"min": 6, "max": 5}, "min 6 > max 5"),
+        ("cited_ids_count", {"min": "5"}, "param 'min'='5' is not"),
+        ("cited_ids_count", {"max": True}, "param 'max'=True is not"),
+        ("tool_arg_covers", {"tool": "t", "arg": "a"}, "missing param(s) ['values']"),
+        ("tool_arg_covers", {"tool": "t", "arg": "a", "values": "1706.02216"}, "is not"),
+        # Python 3.11+: a global flag must start the pattern (hence "(?i)\?|..." in the suite).
+        ("heuristic_answer_matches", {"regex": r"\?|(?i)which"}, "invalid regex"),
     ],
 )
 def test_validate_check_rejects_bad_specs(name: str, params: dict[str, Any], message: str) -> None:
@@ -252,3 +378,7 @@ def test_validate_check_accepts_good_specs() -> None:
     validate_check("tool_arg_min", {"tool": "t", "arg": "a", "value": 6})  # int for a float
     validate_check("tool_arg_equals", {"tool": "t", "arg": "a", "value": {"any": "json"}})
     validate_check("no_tool_called", {})
+    validate_check("cited_ids_count", {"exactly": 0})
+    validate_check("cited_ids_count", {"min": 5, "max": 10})
+    validate_check("cited_ids_count", {"max": 2})
+    validate_check("tool_arg_covers", {"tool": "t", "arg": "a", "values": ["x", 1]})

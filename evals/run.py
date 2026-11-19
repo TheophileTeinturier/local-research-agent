@@ -5,7 +5,8 @@
 
 One line per run while it goes, then a summary. Every record is saved as soon as it exists,
 so an interrupted batch keeps its finished runs. Exit code: 0 when the batch completed
-(whatever the pass rate), 2 for a usage error, an invalid suite or a failed warm-up,
+(whatever the pass rate), 2 for a usage error, an invalid suite, a failed warm-up or (with
+`--require-clean`) uncommitted changes in the working tree,
 3 (with a warning on stderr) when more than 10% of the runs are inconclusive (fixture miss);
 the batch is stored anyway.
 """
@@ -13,9 +14,7 @@ the batch is stored anyway.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import os
-import subprocess
 import sys
 from collections.abc import Sequence
 from dataclasses import asdict
@@ -26,11 +25,20 @@ from local_research_agent.llm import ChatOptions, OllamaClient
 from local_research_agent.llm.ollama import DEFAULT_MODEL
 from local_research_agent.observability import configure_logging
 
+from . import provenance
+from .provenance import read_ollama_info, working_tree_changes
 from .records import RunRecord
 from .report import INCONCLUSIVE_LIMIT, summarize
 from .runner import TOOL_BACKENDS, EvalConfig, run_batch, warm_up
 from .store import DEFAULT_DB_PATH, ResultStore
-from .suite import EVALS_DIR, SuiteError, load_suite, resolve_suite_path, select_cases
+from .suite import (
+    EVALS_DIR,
+    SuiteError,
+    load_suite,
+    resolve_suite_path,
+    select_cases,
+    suite_hashes,
+)
 
 REPO_ROOT = EVALS_DIR.parent
 
@@ -48,7 +56,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--prompt-variant", choices=list(PROMPT_VARIANTS), default=DEFAULT_PROMPT_VARIANT
     )
     parser.add_argument("--num-ctx", type=int, default=options.num_ctx)
-    parser.add_argument("--temperature", type=float, default=options.temperature)
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=options.temperature,
+        help=f"sampling temperature, stored in the batch config (default {options.temperature})",
+    )
     parser.add_argument("--seed", type=int, help="fixed seed (default: the repetition index)")
     parser.add_argument("--repeat", type=int, default=1, help="repetitions per case")
     parser.add_argument(
@@ -63,13 +76,46 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--log-level", default="WARNING", type=str.upper, help="agent logs on stderr"
     )
+    parser.add_argument(
+        "--require-clean",
+        action="store_true",
+        help="refuse to start if the git working tree has uncommitted changes "
+        "(files ignored by .gitignore do not count)",
+    )
     return parser
+
+
+def clean_tree_problem(repo: Path | None = None) -> str | None:
+    """Why the tree is not clean (or cannot be checked); None when it is clean."""
+    changes = working_tree_changes(repo or REPO_ROOT)
+    if changes is None:
+        return "cannot read the git state (is git installed, is this a repository?)"
+    if not changes:
+        return None
+    shown = "\n  ".join(changes[:10]) + ("\n  ..." if len(changes) > 10 else "")
+    return (
+        f"the working tree has {len(changes)} uncommitted change(s); commit or stash them "
+        f"(or drop --require-clean):\n  {shown}"
+    )
+
+
+def schema_hash_config(hashes: Sequence[str]) -> dict[str, object]:
+    """The batch-config entry: one hash, or None plus every hash seen if runs disagreed."""
+    if len(hashes) == 1:
+        return {"tool_schemas_sha256": hashes[0]}
+    return {"tool_schemas_sha256": None, "tool_schemas_sha256_all": list(hashes)}
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     configure_logging(args.log_level)
     sys.stdout.reconfigure(errors="replace")  # type: ignore[union-attr]
+
+    if args.require_clean:  # before anything else: no Ollama call, no batch row
+        problem = clean_tree_problem()
+        if problem is not None:
+            print(f"error: --require-clean: {problem}", file=sys.stderr)
+            return 2
 
     suite_path = resolve_suite_path(args.suite)
     try:
@@ -102,21 +148,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 2
         print(f"warm-up: {warmup.latency_ms:.0f} ms (model load {warmup.load_ms:.0f} ms)")
 
+        info = read_ollama_info(getattr(llm, "host", None), config.model)
+        print(
+            f"ollama {info.version or 'unknown'}, model digest "
+            f"{(info.model_digest or 'unknown')[:12]}"
+        )
         batch_config = {
             **config.to_json(),
             "suite": _display_path(suite_path),
-            "suite_sha256": hashlib.sha256(suite_path.read_bytes()).hexdigest(),
+            **suite_hashes(suite_path),
             "cases": [case.id for case in cases],
+            "ollama_version": info.version,
+            "model_digest": info.model_digest,
+            # Known once a run has called the LLM: filled in by on_record below.
+            "tool_schemas_sha256": None,
         }
         batch_id = store.create_batch(
             config.label, batch_config, git_commit=git_commit(), warmup=asdict(warmup)
         )
         total = len(cases) * config.repetitions
         done = 0
+        schema_hashes: list[str] = []
 
         def on_record(record: RunRecord) -> None:
             nonlocal done
             store.save_run(batch_id, record)
+            digest = record.tool_schemas_sha256
+            if digest is not None and digest not in schema_hashes:
+                schema_hashes.append(digest)
+                store.update_batch_config(batch_id, schema_hash_config(schema_hashes))
             done += 1
             print(format_progress(done, total, record), flush=True)
 
@@ -181,26 +241,7 @@ def _display_path(path: Path) -> str:
 
 def git_commit() -> str | None:
     """Short HEAD hash, with "+dirty" when the working tree has changes; None if unknown."""
-    try:
-        head = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=10,
-        ).stdout.strip()
-        dirty = subprocess.run(
-            ["git", "status", "--porcelain"],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=10,
-        ).stdout.strip()
-    except (OSError, subprocess.SubprocessError):
-        return None
-    return head + ("+dirty" if dirty else "")
+    return provenance.git_commit(REPO_ROOT)
 
 
 if __name__ == "__main__":

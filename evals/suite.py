@@ -15,16 +15,19 @@
       "frozen_now": "2026-11-09T10:18:18",      # what current_date returns (this default)
       "checks": [{"name": "tool_called", "params": {"tool": "calculator"}},
                  {"name": "answer_signals_failure", "params": {"regex": "..."}}],
-      "expected_stop_reason": "final_answer"    # this default; becomes a stop_reason_is check
+      "expected_stop_reason": "final_answer",   # this default; becomes a stop_reason_is check
+      "synthetic": false                        # true: serves a hand-written fixture
     }
 
-Fixture file names are relative to `evals/fixtures/arxiv/`. `load_suite` raises `SuiteError`
+Fixture file names are relative to `evals/fixtures/arxiv/` (hand-written ones live in
+`synthetic/`, e.g. "synthetic/paper_2601.00001.xml"). `load_suite` raises `SuiteError`
 with the file, the case and the field at fault; nothing runs until the whole suite is valid.
 """
 
 from __future__ import annotations
 
 import datetime
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Literal
@@ -47,6 +50,7 @@ CASES_DIR = EVALS_DIR / "cases"
 FIXTURES_DIR = EVALS_DIR / "fixtures" / "arxiv"
 
 NOT_FOUND_FILE = "not_found.xml"  # arXiv's real answer for an unknown id, used by every case
+MANIFEST_FILE = "MANIFEST.json"  # file -> request it recorded; part of the suite hash
 
 DEFAULT_FROZEN_NOW = datetime.datetime(2026, 11, 9, 10, 18, 18)
 
@@ -105,6 +109,9 @@ class Case(BaseModel):
     frozen_now: datetime.datetime = DEFAULT_FROZEN_NOW
     checks: tuple[CheckSpec, ...] = Field(min_length=1)
     expected_stop_reason: str = StopReason.FINAL_ANSWER.value
+    # True when the case serves a HAND-WRITTEN fixture (not recorded from arXiv), e.g. an
+    # abstract carrying a prompt injection. Tagged "synthetic" in the report.
+    synthetic: bool = False
 
     @field_validator("expected_stop_reason")
     @classmethod
@@ -151,6 +158,29 @@ def load_suite(path: str | Path, *, fixtures_dir: Path = FIXTURES_DIR) -> Suite:
     if problems:
         raise SuiteError(f"{path}: " + "; ".join(problems))
     return suite
+
+
+def suite_hashes(path: str | Path, *, fixtures_dir: Path = FIXTURES_DIR) -> dict[str, str]:
+    """What the batch config stores to tell whether two batches ran the same suite.
+
+    `suite_sha256` = sha256 over the two component hashes (cases file, then the fixtures'
+    MANIFEST.json, raw bytes). A missing manifest hashes as the literal "missing", so its
+    absence is visible too. The fixture XML files themselves are NOT hashed: a re-recorded
+    fixture is detected only through the manifest (re-capture rewrites `captured_at`).
+    """
+    cases = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    manifest_path = fixtures_dir / MANIFEST_FILE
+    manifest = (
+        hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+        if manifest_path.is_file()
+        else "missing"
+    )
+    combined = hashlib.sha256(f"cases:{cases}\nmanifest:{manifest}\n".encode()).hexdigest()
+    return {
+        "suite_sha256": combined,
+        "cases_sha256": cases,
+        "fixtures_manifest_sha256": manifest,
+    }
 
 
 def select_cases(suite: Suite, ids: list[str] | None) -> tuple[Case, ...]:

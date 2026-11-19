@@ -83,6 +83,27 @@ class RunRecord:
     checks: tuple[CheckResult, ...] = field(default_factory=tuple)
     tool_backend: str = "local"  # "local" | "mcp"
     mcp_startup_ms: float | None = None  # server spawn + MCP handshake (mcp runs only)
+    # prompt_eval_count of each successful LLM call, in order (0 = not reported). Empty in
+    # batches recorded before it existed. Stored in `trace_json`.
+    llm_prompt_tokens: tuple[int, ...] = ()
+    # Harness clock from building the tools (spawning the MCP server, for mcp) to the end of
+    # the agent run; server shutdown excluded. None for harness errors and older batches.
+    # Stored in `trace_json`.
+    e2e_wall_time_ms: float | None = None
+    synthetic: bool = False  # the case serves a hand-written fixture. Stored in `trace_json`.
+    # SHA-256 of the tool schemas the agent sent the LLM (`provenance.tool_schemas_sha256`);
+    # None if the LLM was never called. Stored in `trace_json`.
+    tool_schemas_sha256: str | None = None
+
+    @property
+    def peak_prompt_tokens(self) -> int | None:
+        """The largest prompt of the run (the context-window pressure); None if unknown."""
+        return max(self.llm_prompt_tokens) if self.llm_prompt_tokens else None
+
+    @property
+    def trajectory(self) -> tuple[tuple[str, str], ...]:
+        """The (tool, normalized arguments) sequence the model requested, repeats included."""
+        return tuple((c.name, c.arguments) for c in self.trace.tool_calls)
 
     @property
     def excluded(self) -> bool:
@@ -112,6 +133,10 @@ class RunRecord:
                 "agent_error": self.agent_error,
                 "fixture_misses": list(self.fixture_misses),
                 "tool_calls": [asdict(call) for call in self.trace.tool_calls],
+                "llm_prompt_tokens": list(self.llm_prompt_tokens),
+                "e2e_wall_time_ms": self.e2e_wall_time_ms,
+                "synthetic": self.synthetic,
+                "tool_schemas_sha256": self.tool_schemas_sha256,
             },
             ensure_ascii=False,
         )
