@@ -203,6 +203,22 @@ def test_compare_mode() -> None:
     assert "| LLM latency (ms) | 2000 | 500 |" in text
 
 
+def test_compare_mode_diff_legend_under_each_diff_table() -> None:
+    a = summarize(batch("baseline"), RUNS)
+    b = summarize(batch("workflow", 2, prompt_variant="research_workflow"), RUNS)
+    lines = render_comparison(a, b).splitlines()
+    legend = "diff = workflow minus baseline (positive = workflow passes more)"
+    assert lines.count(legend) == 2
+    for i in (i for i, line in enumerate(lines) if line == legend):
+        assert lines[i - 1] == ""  # separated from the table, so not parsed as a row
+        assert lines[i - 2].startswith("| ") and lines[i - 2].endswith(" |")
+    total = next(i for i, line in enumerate(lines) if line.startswith("| **total** |"))
+    category = lines.index("## By category")
+    metrics = lines.index("## Metric medians")
+    assert total < lines.index(legend) < category
+    assert category < len(lines) - 1 - lines[::-1].index(legend) < metrics
+
+
 def with_calls(record: RunRecord, *calls: tuple[str, str]) -> RunRecord:
     traced = tuple(ToolCallTrace(1, name, args, True, "ok") for name, args in calls)
     return replace(record, trace=replace(record.trace, tool_calls=traced))

@@ -36,6 +36,7 @@ BATCHES: list[tuple[str, str, str, str, str, int, str | None]] = [
     ("v1-rs-wf-8b", "qwen3:8b", "off", "research_workflow", "local", 10, RS_CASES),
     ("v1-base-4b", "qwen3:4b", "off", "baseline", "local", 3, None),
     ("v1-base-14b", "qwen3:14b", "off", "baseline", "local", 3, None),
+    ("v1-think-base-4b", "qwen3:4b", "on", "baseline", "local", 3, None),
 ]
 
 # (label, baseline label): one factor varies per line
@@ -48,6 +49,8 @@ COMPARISONS: list[tuple[str, str]] = [
     ("v1-base-4b", "v1-base-8b"),
     ("v1-base-14b", "v1-base-8b"),
     ("v1-rs-wf-8b", "v1-rs-base-8b"),
+    ("v1-think-wf-8b", "v1-think-base-8b"),
+    ("v1-think-base-4b", "v1-think-base-8b"),
 ]
 
 
@@ -62,11 +65,12 @@ def preflight(models: set[str]) -> None:
     try:
         version = httpx.get(f"{base}/api/version", timeout=5).json().get("version")
         installed = {m["name"] for m in httpx.get(f"{base}/api/tags", timeout=5).json()["models"]}
-    except Exception as exc:  # noqa: BLE001 - any failure means "not ready"
+    except Exception as exc:  # any failure means "not ready"
         sys.exit(f"Ollama does not answer at {base} ({exc}). Start it and retry.")
     missing = sorted(models - installed)
     if missing:
-        sys.exit("Missing models: " + ", ".join(missing) + "\n" + "\n".join(f"  ollama pull {m}" for m in missing))
+        pulls = "\n".join(f"  ollama pull {m}" for m in missing)
+        sys.exit("Missing models: " + ", ".join(missing) + "\n" + pulls)
     print(f"Ollama {version} OK, models present: {', '.join(sorted(models))}")
 
     dirty = subprocess.run(
@@ -115,7 +119,9 @@ def batch_cmd(b: tuple[str, str, str, str, str, int, str | None]) -> list[str]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true", help="skip labels already stored")
     parser.add_argument("--only", help="comma-separated labels to run")
@@ -159,7 +165,8 @@ def main() -> None:
             stored = done_labels()
             for label, baseline in COMPARISONS:
                 if label in stored and baseline in stored:
-                    stream([sys.executable, "-m", "evals.report", "--label", label, "--compare", baseline], log)
+                    report = ["-m", "evals.report", "--label", baseline, "--compare", label]
+                    stream([sys.executable, *report], log)
 
     print(f"\nTotal: {(time.monotonic() - started) / 60:.1f} min. Log: {LOG_PATH}")
     if failures:

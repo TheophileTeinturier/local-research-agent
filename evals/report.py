@@ -411,11 +411,14 @@ def render_comparison(
     lines.append(
         f"| **total** | {a.total.fraction} | {b.total.fraction} | {_diff(a.total, b.total)} |"
     )
+    legend = f"diff = {lb} minus {la} (positive = {lb} passes more)"
+    lines += ["", legend]
 
     lines += ["", "## By category", "", f"| category | {la} | {lb} | diff |", "|---|---|---|---|"]
     for name in [*a.categories, *(c for c in b.categories if c not in a.categories)]:
         ca, cb = a.categories.get(name), b.categories.get(name)
         lines.append(f"| {name} | {_frac(ca)} | {_frac(cb)} | {_diff(ca, cb)} |")
+    lines += ["", legend]
 
     lines += ["", "## Metric medians", "", f"| metric | {la} | {lb} |", "|---|---|---|"]
     for key, _attr in METRICS:
