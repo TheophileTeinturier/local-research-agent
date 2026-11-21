@@ -160,7 +160,9 @@ def test_tool_arg_covers_fails_on_a_missing_value() -> None:
         t = trace("", details("1609.02907"), second)
         assert not tool_arg_covers(t, tool="get_paper_details", arg="arxiv_id", values=COVERED)[0]
     no_calls = trace("")
-    assert not tool_arg_covers(no_calls, tool="get_paper_details", arg="arxiv_id", values=COVERED)[0]
+    assert not tool_arg_covers(no_calls, tool="get_paper_details", arg="arxiv_id", values=COVERED)[
+        0
+    ]
 
 
 def test_tool_arg_covers_non_string_values() -> None:

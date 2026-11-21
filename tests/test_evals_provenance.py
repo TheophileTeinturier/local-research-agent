@@ -82,8 +82,9 @@ SCRIPT = [tool_call_response(("calculator", {"expression": "2+2"})), text_respon
 def test_every_run_records_the_same_hash(tmp_path: Path) -> None:
     fixtures, case = make_eval_fixtures(tmp_path), Case.model_validate(CASE)
     hashes = {
-        run_case(case, EvalConfig(), r, llm=FakeLLM(SCRIPT), fixtures_dir=fixtures)
-        .tool_schemas_sha256
+        run_case(
+            case, EvalConfig(), r, llm=FakeLLM(SCRIPT), fixtures_dir=fixtures
+        ).tool_schemas_sha256
         for r in range(3)
     }
     assert hashes == {tool_schemas_sha256(build_registry().schemas())}

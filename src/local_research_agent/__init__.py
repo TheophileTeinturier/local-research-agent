@@ -5,4 +5,4 @@ import logging
 # Library convention: emit nothing unless the application (the CLI) configures logging.
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-__version__ = "0.1.0"
+__version__ = "1.0.0rc1"  # keep in sync with pyproject.toml

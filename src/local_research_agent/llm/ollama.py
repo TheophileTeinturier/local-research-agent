@@ -45,6 +45,8 @@ def normalize_host(host: str) -> str:
 
 
 class OllamaClient:
+    """`LLMClient` for a local Ollama server. Use as a context manager, or call `close()`."""
+
     def __init__(
         self,
         model: str = DEFAULT_MODEL,
@@ -81,6 +83,7 @@ class OllamaClient:
         tools: Sequence[ToolSchema] | None = None,
         options: ChatOptions | None = None,
     ) -> LLMResponse:
+        """One non-streaming `/api/chat` call. Raises `LLMError` on any transport/HTTP failure."""
         opts = options or ChatOptions()
         payload: dict[str, Any] = {
             "model": self.model,
@@ -111,6 +114,7 @@ class OllamaClient:
         return parse_chat_response(data)
 
     def close(self) -> None:
+        """Close the underlying HTTP connection pool."""
         self._http.close()
 
     def __enter__(self) -> OllamaClient:

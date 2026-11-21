@@ -52,6 +52,7 @@ class MissRecordingTransport(CaseArxivTransport):
         self._misses_file = misses_file
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
+        """Serve as the parent class does, then append any new miss to the misses file."""
         before = len(self.served)
         try:
             return super().handle_request(request)

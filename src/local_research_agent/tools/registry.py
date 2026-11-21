@@ -47,6 +47,8 @@ _TRUNCATION_MARKER_RE = re.compile(r"\n\[truncated: showing (\d+) of (\d+) chara
 
 
 class ToolRegistry:
+    """The agent's single view of its tools: schemas, routing, safe execution, output cap."""
+
     def __init__(
         self,
         tools: Iterable[Tool[Any]] = (),
@@ -128,6 +130,7 @@ class ToolRegistry:
 
     @property
     def names(self) -> list[str]:
+        """Visible tool names, in provider then registration order."""
         return [name for name in self._all_names() if self._visible(name)]
 
     def __len__(self) -> int:

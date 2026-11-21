@@ -24,6 +24,7 @@ class JsonFormatter(logging.Formatter):
     """One JSON line per record; structured fields come from `extra={"fields": {...}}`."""
 
     def format(self, record: logging.LogRecord) -> str:
+        """Serialize `record` as one JSON object (timestamp, level, logger, event, fields)."""
         entry: dict[str, Any] = {
             "ts": datetime.fromtimestamp(record.created, tz=UTC).isoformat(timespec="milliseconds"),
             "level": record.levelname.lower(),

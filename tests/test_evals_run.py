@@ -14,8 +14,8 @@ from evals.provenance import OllamaInfo, tool_schemas_sha256
 from evals.store import ResultStore
 from evals.suite import suite_hashes
 from fakes import FakeLLM, make_git_repo, text_response, tool_call_response
-from local_research_agent.tools import build_registry
 from local_research_agent.llm import LLMResponse
+from local_research_agent.tools import build_registry
 
 OK = text_response("OK")  # the warm-up's answer
 

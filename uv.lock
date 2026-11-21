@@ -364,9 +364,10 @@ wheels = [
 
 [[package]]
 name = "local-research-agent"
-version = "0.1.0"
+version = "1.0.0rc1"
 source = { editable = "." }
 dependencies = [
+    { name = "anyio" },
     { name = "defusedxml" },
     { name = "httpx" },
     { name = "mcp" },
@@ -381,16 +382,17 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "defusedxml", specifier = ">=0.7" },
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "mcp", specifier = ">=2.3,<3" },
-    { name = "pydantic", specifier = ">=2.7" },
+    { name = "anyio", specifier = ">=4.16" },
+    { name = "defusedxml", specifier = ">=0.7.1" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "mcp", specifier = ">=2.3.0,<3" },
+    { name = "pydantic", specifier = ">=2.14.2" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pytest", specifier = ">=8.0" },
-    { name = "ruff", specifier = ">=0.6" },
+    { name = "pytest", specifier = ">=9.2" },
+    { name = "ruff", specifier = ">=0.17.3" },
 ]
 
 [[package]]

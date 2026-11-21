@@ -63,6 +63,7 @@ class PassCount:
     harness_error: int = 0
 
     def add(self, record: RunRecord) -> None:
+        """Count one run: as a harness error, as inconclusive, or towards k/n."""
         if record.harness_error is not None:
             self.harness_error += 1
         elif record.fixture_misses:
@@ -74,10 +75,12 @@ class PassCount:
 
     @property
     def fraction(self) -> str:
+        """The "k/n" pass count over deterministic checks."""
         return f"{self.passed}/{self.counted}"
 
     @property
     def fraction_with_heuristics(self) -> str:
+        """The "k/n" pass count with heuristic checks included."""
         return f"{self.passed_with_heuristics}/{self.counted}"
 
     @property
@@ -87,6 +90,7 @@ class PassCount:
 
     @property
     def excluded(self) -> str:
+        """Readable list of the excluded runs, or "-"."""
         parts = []
         if self.fixture_miss:
             parts.append(f"{self.fixture_miss} inconclusive (fixture_miss)")
@@ -97,6 +101,8 @@ class PassCount:
 
 @dataclass(frozen=True)
 class Stats:
+    """Median and maximum of a metric over `n` values."""
+
     median: float
     max: float
     n: int = 0  # number of values
@@ -104,6 +110,8 @@ class Stats:
 
 @dataclass
 class CaseSummary:
+    """Per-case results of a batch: pass counts, failing checks, medians, trajectories."""
+
     case_id: str
     category: str
     count: PassCount = field(default_factory=PassCount)
@@ -140,6 +148,8 @@ class InconclusiveRun:
 
 @dataclass(frozen=True)
 class BatchSummary:
+    """Everything the report shows for one batch, computed by `summarize`."""
+
     batch: Batch
     total: PassCount
     categories: dict[str, PassCount]
@@ -531,6 +541,8 @@ _NOT_SETTINGS = {
 
 @dataclass(frozen=True)
 class BatchComparison:
+    """How two batches differ: the varied key(s), warnings and expected differences."""
+
     varied: tuple[str, ...]  # config keys intentionally varied
     varied_source: str  # "given" (--vary), "inferred" (the only differing setting) or "none"
     warnings: tuple[str, ...]  # differences that make the comparison doubtful
@@ -725,6 +737,7 @@ def _med(stats: Stats | None, decimals: int = 0) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Command-line arguments of `evals.report`."""
     parser = argparse.ArgumentParser(prog="evals.report", description=__doc__.splitlines()[0])
     parser.add_argument("--label", required=True, help="batch label (the latest batch is used)")
     parser.add_argument("--compare", help="second label: side-by-side comparison")
@@ -739,6 +752,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Render the report (or comparison) of the latest batch(es) for the given label(s)."""
     args = build_parser().parse_args(argv)
     sys.stdout.reconfigure(errors="replace")  # type: ignore[union-attr]
     with ResultStore(args.db) as store:

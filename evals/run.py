@@ -46,6 +46,7 @@ EXIT_TOO_MANY_INCONCLUSIVE = 3  # 2 is taken by usage errors and a failed warm-u
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Command-line arguments of `evals.run`."""
     options = ChatOptions()
     parser = argparse.ArgumentParser(prog="evals.run", description="Run an evaluation suite.")
     parser.add_argument("--suite", default="minimal", help="name in evals/cases/ or a path")
@@ -107,6 +108,7 @@ def schema_hash_config(hashes: Sequence[str]) -> dict[str, object]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Validate, warm up, run the batch, store every record and print a summary."""
     args = build_parser().parse_args(argv)
     configure_logging(args.log_level)
     sys.stdout.reconfigure(errors="replace")  # type: ignore[union-attr]

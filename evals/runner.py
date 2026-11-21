@@ -86,9 +86,11 @@ class EvalConfig:
             raise ValueError(f"label {self.label!r} must match {LABEL_RE.pattern}")
 
     def seed_for(self, repetition: int) -> int:
+        """The fixed seed, or the repetition index when none is set."""
         return self.seed if self.seed is not None else repetition
 
     def chat_options(self, repetition: int) -> ChatOptions:
+        """LLM options for one repetition."""
         return ChatOptions(
             temperature=self.temperature,
             num_ctx=self.num_ctx,
@@ -97,6 +99,7 @@ class EvalConfig:
         )
 
     def agent_config(self, repetition: int) -> AgentConfig:
+        """The `AgentConfig` for one repetition (prompt variant, limits, options)."""
         return AgentConfig(
             system_prompt=get_system_prompt(self.prompt_variant),
             limits=self.limits,

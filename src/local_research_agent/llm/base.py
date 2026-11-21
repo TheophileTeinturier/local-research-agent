@@ -47,6 +47,8 @@ class ToolCall:
 
 @dataclass(frozen=True)
 class LLMMetrics:
+    """Token counts and server-side timings reported by the backend for one call."""
+
     prompt_eval_count: int | None = None  # prompt tokens (including cached ones)
     eval_count: int | None = None  # generated tokens
     total_duration_ns: int | None = None  # server-side time, nanoseconds
@@ -56,10 +58,12 @@ class LLMMetrics:
 
     @property
     def total_duration_ms(self) -> float | None:
+        """Server-side duration of the call, in milliseconds."""
         return _ns_to_ms(self.total_duration_ns)
 
     @property
     def load_duration_ms(self) -> float | None:
+        """Model loading time included in the call, in milliseconds."""
         return _ns_to_ms(self.load_duration_ns)
 
 
@@ -69,6 +73,8 @@ def _ns_to_ms(value: int | None) -> float | None:
 
 @dataclass(frozen=True)
 class ChatOptions:
+    """Per-request generation options (sampling, context window, reasoning, seed)."""
+
     temperature: float = 0.2
     num_ctx: int = 8192
     # Qwen3 reasoning. False = no reasoning, True = reasoning, None = model default
@@ -76,12 +82,14 @@ class ChatOptions:
     think: bool | None = False
     # Sampling seed (Ollama `options.seed`, "for reproducible outputs"). None = not sent,
     # the server picks one. Same seed + same input is NOT a guarantee of identical output
-    # on a GPU (batching, kernel nondeterminism); see docs/REVIEW_GUIDE.md.
+    # on a GPU (batching, kernel nondeterminism).
     seed: int | None = None
 
 
 @dataclass(frozen=True)
 class LLMResponse:
+    """One chat completion: the raw assistant message, its parsed tool calls and metrics."""
+
     # The assistant message exactly as returned. It is appended to the history unchanged,
     # so the model sees its own tool_calls on the next turn.
     message: Message
@@ -90,10 +98,12 @@ class LLMResponse:
 
     @property
     def content(self) -> str:
+        """The assistant's text ("" when it only requested tools)."""
         return self.message.get("content") or ""
 
     @property
     def thinking(self) -> str | None:
+        """The model's reasoning text, when reasoning was enabled."""
         return self.message.get("thinking") or None
 
 
@@ -105,17 +115,25 @@ class LLMClient(Protocol):
         messages: Sequence[Message],
         tools: Sequence[ToolSchema] | None = None,
         options: ChatOptions | None = None,
-    ) -> LLMResponse: ...
+    ) -> LLMResponse:
+        """Send `messages` (and the tool schemas) and return the model's response.
+
+        Raises `LLMError` when no response could be obtained.
+        """
+        ...
 
 
 def system_message(content: str) -> Message:
+    """A system message."""
     return {"role": "system", "content": content}
 
 
 def user_message(content: str) -> Message:
+    """A user message."""
     return {"role": "user", "content": content}
 
 
 def tool_result_message(tool_name: str, content: str) -> Message:
+    """The observation for one tool call, sent back to the model."""
     # Ollama links a result to its call by tool name (`tool_name`), not by call id.
     return {"role": "tool", "tool_name": tool_name, "content": content}

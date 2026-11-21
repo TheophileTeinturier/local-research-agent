@@ -67,6 +67,8 @@ DETAILS_DESCRIPTION = (
 # --- search_arxiv ---------------------------------------------------------------------------
 
 
+# Argument models have no docstring on purpose: Pydantic would copy it into the tool's JSON
+# schema sent to the LLM.
 class SearchArxivArgs(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -152,6 +154,7 @@ def _format_summary(index: int, paper: PaperSummary) -> str:
 # --- get_paper_details ----------------------------------------------------------------------
 
 
+# No docstring on purpose (see SearchArxivArgs).
 class GetPaperDetailsArgs(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

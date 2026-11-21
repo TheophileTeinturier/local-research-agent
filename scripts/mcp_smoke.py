@@ -45,6 +45,7 @@ def offline_registry() -> ToolRegistry:
 
 
 def main() -> int:
+    """Start the server, list and call every tool once, then check the process is gone."""
     from local_research_agent.mcp.client import McpClientBridge, server_parameters
     from local_research_agent.mcp.provider import from_call_tool_result
 

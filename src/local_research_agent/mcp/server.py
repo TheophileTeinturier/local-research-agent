@@ -1,8 +1,5 @@
 """MCP server (stdio) exposing the tools of a `ToolRegistry`. Low-level SDK API, no FastMCP.
 
-    python -m local_research_agent.mcp.server [--registry-factory module:function]
-                                              [--log-level LEVEL]
-
 `--registry-factory` names a zero-argument function returning the `ToolRegistry` to serve
 (default: `build_default_registry`, the real tools). It is resolved with importlib, so tests
 and the evaluation harness can serve a registry built on a fake arXiv transport, a frozen
@@ -17,15 +14,6 @@ its client. Our own agent already sends well-formed calls, but any MCP client ma
 (a desktop app, an inspector, a buggy script), and the SDK's low-level server does not apply
 the advertised `inputSchema` (v2 removed that). The server never raises on bad input: an
 unknown tool, invalid arguments and tool exceptions all come back as `isError` results.
-
-STDOUT IS SACRED. In stdio mode, stdout is the protocol channel: every byte on it must be a
-JSON-RPC message, and one stray `print()` corrupts the stream (the client fails to parse the
-line, and the request it belonged to never completes). So nothing here writes to stdout: logs
-go to stderr (`configure_logging`), argparse errors go to stderr, and the tools never print
-(tests/test_mcp_server.py checks it at the file-descriptor level). The SDK's `stdio_server`
-adds defence in depth while serving (it points fd 1 at stderr and writes the protocol to a
-private duplicate), but it cannot protect what runs before it starts: imports and the
-registry factory.
 """
 
 from __future__ import annotations
@@ -163,6 +151,7 @@ def load_registry_factory(spec: str) -> RegistryFactory:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Command-line arguments of the server (`--registry-factory`, `--log-level`)."""
     parser = argparse.ArgumentParser(
         prog="local_research_agent.mcp.server",
         description="Serve the agent's tools over MCP (stdio). Logs go to stderr.",

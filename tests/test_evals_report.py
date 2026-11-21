@@ -209,7 +209,10 @@ def with_calls(record: RunRecord, *calls: tuple[str, str]) -> RunRecord:
 
 
 def test_distinct_trajectories_per_case() -> None:
-    search3, search10 = ("search_arxiv", '{"max_results":3}'), ("search_arxiv", '{"max_results":10}')
+    search3, search10 = (
+        ("search_arxiv", '{"max_results":3}'),
+        ("search_arxiv", '{"max_results":10}'),
+    )
     opened = ("get_paper_details", '{"arxiv_id":"2606.01781"}')
     runs = [
         with_calls(rec("research", "multi_step", repetition=0), search3, opened),
@@ -241,7 +244,11 @@ def test_peak_prompt_median_per_case_in_the_report() -> None:
     assert "| - | 1 of 3 runs |" in render_report(summarize(batch("b"), RUNS[:3]))
 
 
-SUITE_V2 = {"suite_sha256": "a" * 64, "cases_sha256": "c" * 64, "fixtures_manifest_sha256": "m" * 64}
+SUITE_V2 = {
+    "suite_sha256": "a" * 64,
+    "cases_sha256": "c" * 64,
+    "fixtures_manifest_sha256": "m" * 64,
+}
 
 
 @pytest.mark.parametrize(

@@ -43,6 +43,7 @@ def canonical_schemas_json(schemas: Sequence[ToolSchema]) -> bytes:
 
 
 def tool_schemas_sha256(schemas: Sequence[ToolSchema]) -> str:
+    """SHA-256 (hex) of `canonical_schemas_json(schemas)`."""
     return hashlib.sha256(canonical_schemas_json(schemas)).hexdigest()
 
 
@@ -59,6 +60,7 @@ class SchemaRecorder:
         tools: Sequence[ToolSchema] | None = None,
         options: ChatOptions | None = None,
     ) -> LLMResponse:
+        """Record the hash of `tools`, then forward the call unchanged."""
         self.hashes.append(tool_schemas_sha256(tools or []))
         return self._inner.chat(messages, tools=tools, options=options)
 
@@ -80,6 +82,8 @@ class SchemaRecorder:
 
 @dataclass(frozen=True)
 class OllamaInfo:
+    """Ollama server version and model digest; None when unknown."""
+
     version: str | None
     model_digest: str | None
 

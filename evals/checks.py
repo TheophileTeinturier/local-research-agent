@@ -245,6 +245,8 @@ def answer_signals_failure(trace: RunTrace, *, regex: str) -> Verdict:
 
 @dataclass(frozen=True)
 class CheckDef:
+    """A registered check: its function, whether it is heuristic, and an optional validator."""
+
     fn: Callable[..., Verdict]
     heuristic: bool = False
     # Cross-parameter rules the type hints cannot express; raises CheckSpecError.

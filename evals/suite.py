@@ -100,6 +100,8 @@ class ArxivSpec(BaseModel):
 
 
 class Case(BaseModel):
+    """One evaluation case: a question, its fake-arXiv world and the checks to run."""
+
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     id: str = Field(pattern=r"^[a-z0-9_]+$")
@@ -128,6 +130,8 @@ class Case(BaseModel):
 
 
 class Suite(BaseModel):
+    """A suite file: an optional description and at least one case."""
+
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     description: str = ""

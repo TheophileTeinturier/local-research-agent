@@ -242,7 +242,9 @@ def run_shipped(case_id: str, script: list[LLMResponse | BaseException]) -> RunR
 
 
 def verdicts(record: RunRecord) -> dict[str, bool]:
-    return {c.name.split("(")[0] + ("" if not c.heuristic else "*"): c.passed for c in record.checks}
+    return {
+        c.name.split("(")[0] + ("" if not c.heuristic else "*"): c.passed for c in record.checks
+    }
 
 
 OPEN_BOTH = tool_call_response(

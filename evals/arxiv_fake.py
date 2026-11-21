@@ -65,6 +65,7 @@ class CaseArxivTransport(httpx.BaseTransport):
         return [r.key for r in self.served if r.outcome == "miss"]
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
+        """Answer one arXiv API request from the case's fixtures and record how it was served."""
         params = dict(request.url.params)
         key = request.url.query.decode("ascii", errors="replace")
         kind = (

@@ -262,6 +262,7 @@ def _write_json(path: Path, data: object) -> None:
 
 
 def main() -> int:
+    """Parse the mode flags and record the selected fixtures (network: real arXiv API)."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--evals", action="store_true", help="(re-)record the evaluation fixtures")

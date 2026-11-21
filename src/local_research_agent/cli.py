@@ -45,6 +45,7 @@ class ToolBackend:
     mcp_startup_ms: float | None = None
 
     def describe(self) -> str:
+        """Short label for the trace line, e.g. "tools mcp (server startup 950 ms)"."""
         if self.mcp_startup_ms is None:
             return f"tools {self.name}"
         return f"tools {self.name} (server startup {self.mcp_startup_ms:.0f} ms)"

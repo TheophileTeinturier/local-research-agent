@@ -94,6 +94,8 @@ class StoreError(RuntimeError):
 
 @dataclass(frozen=True)
 class Batch:
+    """A stored batch: label, creation time, git commit, config and warm-up."""
+
     id: int
     label: str
     created_at: str
@@ -247,6 +249,7 @@ class ResultStore:
         return None if row is None else _batch(row)
 
     def labels(self) -> list[str]:
+        """Every batch label in the database, sorted."""
         rows = self._db.execute("SELECT DISTINCT label FROM batches ORDER BY label").fetchall()
         return [row["label"] for row in rows]
 
@@ -272,6 +275,7 @@ class ResultStore:
         return [_record(row, tuple(checks[row["id"]])) for row in rows]
 
     def close(self) -> None:
+        """Close the database connection."""
         self._db.close()
 
     def __enter__(self) -> ResultStore:

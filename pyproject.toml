@@ -1,14 +1,35 @@
 [project]
 name = "local-research-agent"
-version = "0.1.0"
-description = "Local LLM agent (Ollama) with native tool calling"
+version = "1.0.0rc1"
+description = "A local research agent: an Ollama LLM with native tool calling, arXiv tools, an MCP server and an evaluation harness."
 readme = "README.md"
 requires-python = ">=3.11"
+keywords = [
+    "llm",
+    "agent",
+    "tool-calling",
+    "ollama",
+    "mcp",
+    "model-context-protocol",
+    "arxiv",
+    "evaluation",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Lower bounds = the versions the test suite was run against (see uv.lock).
 dependencies = [
-    "defusedxml>=0.7",
-    "httpx>=0.27",
-    "mcp>=2.3,<3",
-    "pydantic>=2.7",
+    "anyio>=4.16",
+    "defusedxml>=0.7.1",
+    "httpx>=0.28.1",
+    "mcp>=2.3.0,<3",
+    "pydantic>=2.14.2",
 ]
 
 [project.scripts]
@@ -16,12 +37,12 @@ local-research-agent = "local_research_agent.cli:main"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0",
-    "ruff>=0.6",
+    "pytest>=9.2",
+    "ruff>=0.17.3",
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]

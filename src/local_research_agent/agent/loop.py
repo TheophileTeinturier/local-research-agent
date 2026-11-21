@@ -14,7 +14,7 @@ One iteration:
     too many consecutive tool errors? --> TOO_MANY_TOOL_ERRORS
     repeat
 
-Invariants (see docs/REVIEW_GUIDE.md):
+Invariants (see docs/architecture.md):
 - it always terminates: every iteration either makes an LLM call, which increments
   `state.iteration` (bounded by max_iterations), or returns a StopReason;
 - it always sets `state.stop_reason` (only in `_finish`, the single exit);

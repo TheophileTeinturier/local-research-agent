@@ -118,12 +118,14 @@ def _unsupported_operator_message(op: ast.operator | ast.unaryop) -> str:
 
 
 def format_number(value: Number) -> str:
+    """Integers as is; floats to 15 significant digits."""
     if isinstance(value, int):
         return str(value)
     # 15 significant digits hide binary floating-point noise: 0.1 + 0.2 -> "0.3", 10 / 2 -> "5".
     return format(value, ".15g")
 
 
+# No docstring on purpose: Pydantic would copy it into the tool's JSON schema sent to the LLM.
 class CalculatorArgs(BaseModel):
     # Unknown fields are an error rather than silently ignored, so a confused model gets told.
     model_config = ConfigDict(extra="forbid")
@@ -136,6 +138,7 @@ class CalculatorArgs(BaseModel):
 
 
 def calculate(args: CalculatorArgs) -> str:
+    """The `calculator` tool function: "<expression> = <result>"."""
     result = format_number(evaluate(args.expression))
     # Echoing the expression lets the model check that it computed what it meant to.
     return f"{args.expression.strip()} = {result}"

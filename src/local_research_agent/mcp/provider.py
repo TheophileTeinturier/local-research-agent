@@ -4,7 +4,7 @@ The agent loop and the registry do not know the tools are remote: schemas have t
 format of local ones, and every outcome (success, tool error, timeout, dead server) is a
 `ToolResult`. `execute` never raises for an expected failure.
 
-What crosses MCP and what does not (see docs/REVIEW_GUIDE.md, "Decisions taken"):
+What crosses MCP and what does not (see docs/architecture.md, "MCP bridge"):
 - content and ok/error: always (text content + `isError`);
 - `error_type`: through the result's `_meta` (our server sets it; another server would not,
   and the generic "tool_error" is used then);
@@ -70,9 +70,11 @@ class McpToolProvider:
         self._names = [schema["function"]["name"] for schema in self._schemas]
 
     def schemas(self) -> list[ToolSchema]:
+        """The server's tools in the LLM's format (a copy of the startup listing)."""
         return copy.deepcopy(self._schemas)  # callers may not mutate our cache
 
     def has(self, name: str) -> bool:
+        """Whether the server lists a tool called `name`."""
         return name in self._names
 
     def execute(self, name: str, raw_args: RawArguments) -> ToolResult:

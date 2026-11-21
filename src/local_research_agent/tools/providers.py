@@ -45,9 +45,13 @@ class ToolProvider(Protocol):
         the provider is added to a registry (names are checked for duplicates then)."""
         ...
 
-    def has(self, name: str) -> bool: ...
+    def has(self, name: str) -> bool:
+        """Whether this provider serves a tool called `name`."""
+        ...
 
-    def execute(self, name: str, raw_args: RawArguments) -> ToolResult: ...
+    def execute(self, name: str, raw_args: RawArguments) -> ToolResult:
+        """Run one call; every expected failure comes back as `ToolResult(ok=False)`."""
+        ...
 
 
 class LocalToolProvider:
@@ -59,21 +63,26 @@ class LocalToolProvider:
             self.register(tool)
 
     def register(self, tool: Tool[Any]) -> None:
+        """Add a tool. Raises `ValueError` if the name is already taken."""
         if tool.name in self._tools:
             raise ValueError(f"Tool {tool.name!r} is already registered")
         self._tools[tool.name] = tool
 
     def get(self, name: str) -> Tool[Any] | None:
+        """The `Tool` called `name`, or None."""
         return self._tools.get(name)
 
     @property
     def names(self) -> list[str]:
+        """Tool names, in registration order."""
         return list(self._tools)
 
     def has(self, name: str) -> bool:
+        """Whether a tool called `name` is registered."""
         return name in self._tools
 
     def schemas(self) -> list[ToolSchema]:
+        """Every tool's definition in the LLM's format, in registration order."""
         return [
             tool_schema(tool.name, tool.description, tool.parameters_schema())
             for tool in self._tools.values()
@@ -150,6 +159,7 @@ def error_result(error_type: str, message: str) -> ToolResult:
 
 
 def unknown_tool_result(name: str, available: Iterable[str]) -> ToolResult:
+    """The error observation for a call to a tool that does not exist (lists the valid ones)."""
     listed = ", ".join(available) or "none"
     return error_result("unknown_tool", f"Unknown tool {name!r}. Available tools: {listed}.")
 

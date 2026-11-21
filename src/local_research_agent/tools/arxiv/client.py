@@ -100,7 +100,9 @@ class RateLimiter:
 class TTLCache:
     """Small in-memory cache: entries expire after `ttl_s`; the oldest is evicted when full."""
 
-    def __init__(self, ttl_s: float, *, clock: Clock, max_entries: int = DEFAULT_CACHE_ENTRIES):
+    def __init__(
+        self, ttl_s: float, *, clock: Clock, max_entries: int = DEFAULT_CACHE_ENTRIES
+    ) -> None:
         self.ttl_s = ttl_s
         self._clock = clock
         self._max_entries = max_entries
@@ -108,6 +110,7 @@ class TTLCache:
         self._lock = threading.Lock()
 
     def get(self, key: str) -> Feed | None:
+        """The cached feed for `key`, or None if absent or expired."""
         with self._lock:
             item = self._entries.get(key)
             if item is None:
@@ -119,6 +122,7 @@ class TTLCache:
             return value
 
     def set(self, key: str, value: Feed) -> None:
+        """Store `value` under `key` for `ttl_s` seconds, evicting the oldest entry if full."""
         with self._lock:
             self._entries[key] = (self._clock() + self.ttl_s, value)
             self._entries.move_to_end(key)

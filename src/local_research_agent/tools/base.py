@@ -1,8 +1,8 @@
 """Tool definition: the single source of truth for a tool.
 
 A tool is defined once (name, description, Pydantic argument model, plain Python function).
-Everything else is derived from it: the JSON schema sent to the LLM now, and the MCP tool
-listing later. Nothing about a tool is written twice.
+Everything else is derived from it: the JSON schema sent to the LLM and the MCP tool
+listing. Nothing about a tool is written twice.
 """
 
 from __future__ import annotations
@@ -45,6 +45,8 @@ class ToolResult:
 
 @dataclass(frozen=True)
 class Tool(Generic[ArgsT]):
+    """A tool: name, description, Pydantic argument model and the function that runs it."""
+
     name: str
     description: str  # prompt engineering: this is how the model decides when/how to call it
     args_model: type[ArgsT]

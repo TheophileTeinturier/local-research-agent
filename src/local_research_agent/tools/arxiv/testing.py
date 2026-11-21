@@ -45,6 +45,7 @@ class FakeArxivTransport(httpx.BaseTransport):
         return cls({item["key"]: (root / item["file"]).read_bytes() for item in index["fixtures"]})
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
+        """Serve the recorded body for this request, or an empty feed (logged as unmatched)."""
         self.requests.append(request)
         key = request_key(dict(request.url.params))
         body = self._responses.get(key)
