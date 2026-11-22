@@ -15,4 +15,3 @@ evals/results/
 
 # Local configuration
 .env
-.claude
