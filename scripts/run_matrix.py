@@ -7,6 +7,7 @@ Usage (from the repository root):
     uv run python scripts/run_matrix.py --only v1-base-8b,v1-mcp-8b
     uv run python scripts/run_matrix.py --keep-going # do not stop at the first failure
 """
+
 from __future__ import annotations
 
 import argparse
@@ -95,8 +96,14 @@ def stream(cmd: list[str], log) -> int:
     """Run a command, echo its output live and copy it to the log file."""
     env = {**os.environ, "PYTHONUNBUFFERED": "1", "PYTHONIOENCODING": "utf-8"}
     with subprocess.Popen(
-        cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        text=True, encoding="utf-8", errors="replace", env=env,
+        cmd,
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
     ) as proc:
         assert proc.stdout is not None
         for line in proc.stdout:
@@ -108,9 +115,23 @@ def stream(cmd: list[str], log) -> int:
 def batch_cmd(b: tuple[str, str, str, str, str, int, str | None]) -> list[str]:
     label, model, think, prompt, tools, repeat, cases = b
     cmd = [
-        sys.executable, "-m", "evals.run", "--suite", "minimal",
-        "--model", model, "--think", think, "--prompt-variant", prompt,
-        "--tools", tools, "--repeat", str(repeat), "--label", label,
+        sys.executable,
+        "-m",
+        "evals.run",
+        "--suite",
+        "minimal",
+        "--model",
+        model,
+        "--think",
+        think,
+        "--prompt-variant",
+        prompt,
+        "--tools",
+        tools,
+        "--repeat",
+        str(repeat),
+        "--label",
+        label,
         "--require-clean",
     ]
     if cases:
