@@ -18,7 +18,7 @@ The project favours depth over breadth: one agent, a few tools, and enough measu
 ## Moved to the roadmap
 
 - **LangGraph orchestration with a verification node.** Re-expressing the loop as a graph and adding a node that checks the draft answer against the tool results (for example, that every cited arXiv id was actually returned or opened) before answering. The current harness is designed to compare that version against the hand-written baseline.
-- **Extended evaluation.** A larger suite, more models and repetitions, an evaluation matrix across models and prompt variants, and analysis beyond pass counts.
+- **Extended evaluation.**Fix the known issues of the suite (see the README), a larger suite with fixtures that depend on the query and the sort, more models and repetitions, an evaluation of synthesis quality.
 - **A FastAPI service** exposing the agent over HTTP.
 - **docker-compose** packaging of the service together with Ollama.
 

@@ -50,7 +50,7 @@ The agent is a single, synchronous, hand-written loop. The LLM backend and the t
 | `local_research_agent/observability/logger.py` | JSON-lines logging to stderr (`configure_logging`, `log_event`). |
 | `local_research_agent/cli.py` | Command-line entry point (`local-research-agent`): builds the tools (local or MCP), runs the agent once and prints the answer plus a compact trace. |
 | `evals/` | Evaluation harness (not part of the installed package): suite schema, fake arXiv, runner, checks, SQLite store, reports, provenance. |
-| `scripts/` | Fixture capture from the real arXiv API, and an MCP smoke check. |
+| `scripts/` | Fixture capture from the real arXiv API, an MCP smoke check, and run_matrix.py (runs every batch of the v1 matrix, then generates the reports and comparisons) |
 
 ## 3. The tool-calling round trip
 
@@ -179,7 +179,7 @@ run_agent
 
 ### Cases and checks
 
-A case declares a question, the fixtures its fake arXiv serves, an optional frozen date, the checks to run and the expected stop reason. The shipped suite (`evals/cases/minimal.json`) has 18 cases across single-tool, multi-step, tool-choice, error and edge categories, including one case served by a hand-written fixture with an indirect prompt injection in an abstract (tagged `synthetic`).
+A case declares a question, the fixtures its fake arXiv serves, an optional frozen date, the checks to run and the expected stop reason. The shipped suite (`evals/cases/minimal.json`) has 18 cases across single-tool, multi-step, tool-choice, no tool, error and edge categories, including one case served by a hand-written fixture with an indirect prompt injection in an abstract (tagged `synthetic`).
 
 Checks are either **deterministic** (tool trace, arguments, cited arXiv ids versus ids returned or opened by tools, iteration and error counts, stop reason, unambiguous answer regexes) or **heuristic** (regexes over free wording). Heuristic results are reported separately and never count towards `passed`.
 
@@ -187,7 +187,7 @@ Checks are either **deterministic** (tool trace, arguments, cited arXiv ids vers
 
 - **One run, one record.** `run_case` catches every ordinary exception, in the agent or in the harness, and returns a record with `harness_error`. Ctrl-C is not caught; finished runs are already stored.
 - **Checks are pure**: no clock, no I/O, no mutation. Malformed check declarations are rejected when the suite loads, before any model runs.
-- **A fixture miss is never an agent failure, and never silent.** A request no fixture covers is answered with an empty feed and recorded as a miss; the run is excluded from pass counts, listed in an "Inconclusive runs" report section, and above 10 % inconclusive runs `evals.run` exits with code 3. Cases built around a lookup can declare `default_search: "empty"` so a fallback search is judged rather than excluded.
+- **A fixture miss is never an agent failure, and never silent.** A request no fixture covers is answered with an empty feed and recorded as a miss; the run is excluded from pass counts, listed in an "Inconclusive runs" report section, and above 10 % inconclusive runs `evals.run` exits with code 3. Cases built around a lookup can declare `default_search: "empty"` so a fallback search is judged rather than excluded. In v1, no_tool_general declares no default_search, so an unexpected search there is excluded rather than judged (the README counts these runs as failures and lists this as a known issue).
 - **The agent is not modified for evaluation.** The harness uses injection points only: an arXiv transport, a frozen clock, `ChatOptions.seed`, and named prompt variants.
 - **Batches are comparable.** Each batch stores its full configuration plus identity hashes:
   - `system_prompt_sha256`: hash of the system prompt text;
